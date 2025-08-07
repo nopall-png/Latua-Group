@@ -10,89 +10,109 @@ if (!isset($_SESSION['user_id'])) {
 $upload_messages = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Validasi input wajib
+    $required_fields = [
+        'title' => 'Judul Properti',
+        'id_properti' => 'ID Properti',
+        'property_type' => 'Tipe Penawaran',
+        'tipe_properti' => 'Tipe Properti',
+        'province' => 'Provinsi',
+        'regency' => 'Kota/Kabupaten',
+        'price' => 'Harga',
+        'description' => 'Deskripsi'
+    ];
+
+    foreach ($required_fields as $field => $label) {
+        if (empty($_POST[$field])) {
+            $upload_messages[] = "<span class='error-message'>$label wajib diisi.</span>";
+            return;
+        }
+    }
+
     // Basic Property Details
     $title = $_POST['title'];
     $description = $_POST['description'];
     $price = $_POST['price'];
-    $property_type = $_POST['property_type']; // 'for_sale' or 'for_rent'
+    $property_type = $_POST['property_type'];
 
     // New Specifications
     $id_properti = $_POST['id_properti'];
-    $tipe_properti = $_POST['tipe_properti']; 
-    $luas_tanah = $_POST['luas_tanah'];
-    $luas_bangunan = $_POST['luas_bangunan'];
-    $arah_bangunan = $_POST['arah_bangunan'];
-    $jenis_bangunan = $_POST['jenis_bangunan'];
-    $jumlah_lantai = $_POST['jumlah_lantai'];
-    $kamar_tidur = $_POST['kamar_tidur'];
-    $kamar_pembantu = $_POST['kamar_pembantu'];
-    $kamar_mandi = $_POST['kamar_mandi'];
-    $daya_listrik = $_POST['daya_listrik'];
-    $saluran_air = $_POST['saluran_air'];
-    $jalur_telepon = $_POST['jalur_telepon'];
-    $interior = $_POST['interior'];
-    $garasi_parkir = $_POST['garasi_parkir'];
-    $sertifikat = $_POST['sertifikat'];
-    $view_count = 0; // Set default 0 for new uploads
-    
+    $tipe_properti = $_POST['tipe_properti'];
+    $luas_tanah = $_POST['luas_tanah'] ?? null;
+    $luas_bangunan = $_POST['luas_bangunan'] ?? null;
+    $arah_bangunan = $_POST['arah_bangunan'] ?? null;
+    $jenis_bangunan = $_POST['jenis_bangunan'] ?? null;
+    $jumlah_lantai = $_POST['jumlah_lantai'] ?? null;
+    $kamar_tidur = $_POST['kamar_tidur'] ?? null;
+    $kamar_pembantu = $_POST['kamar_pembantu'] ?? null;
+    $kamar_mandi = $_POST['kamar_mandi'] ?? null;
+    $daya_listrik = $_POST['daya_listrik'] ?? null;
+    $saluran_air = $_POST['saluran_air'] ?? null;
+    $jalur_telepon = $_POST['jalur_telepon'] ?? null;
+    $interior = $_POST['interior'] ?? null;
+    $garasi_parkir = $_POST['garasi_parkir'] ?? null;
+    $sertifikat = $_POST['sertifikat'] ?? null;
+    $view_count = 0;
+
     // Lokasi
-    $province = $_POST['province'] ?? '';
-    $regency = $_POST['regency'] ?? '';
+    $province = $_POST['province'];
+    $regency = $_POST['regency'];
     $district_or_area = $_POST['district_or_area'] ?? '';
 
-    // ID Agen yang dipilih
+    // ID Agen
     $agent_id = !empty($_POST['agent_id']) && is_numeric($_POST['agent_id']) ? $_POST['agent_id'] : null;
 
-
-    // Ambil daftar ID gambar yang sudah diupload via AJAX dari hidden input
+    // Ambil daftar ID gambar
     $uploaded_image_ids_str = $_POST['uploaded_image_ids'] ?? '';
     $uploaded_image_ids = array_filter(explode(',', $uploaded_image_ids_str));
 
-    $target_dir = "../Uploads/"; // Folder utama untuk semua upload
-
     try {
-        // Insert main property details (termasuk kolom lokasi baru dan agent_id)
+        // Mulai transaksi
+        $pdo->beginTransaction();
+
+        // Insert main property details
         $stmt = $pdo->prepare("INSERT INTO properties (
             title, description, price, property_type, view_count,
             id_properti, tipe_properti, luas_tanah, luas_bangunan, arah_bangunan,
             jenis_bangunan, jumlah_lantai, kamar_tidur, kamar_pembantu, kamar_mandi,
             daya_listrik, saluran_air, jalur_telepon, interior, garasi_parkir, sertifikat,
-            province, regency, district_or_area, agent_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            province, regency, district_or_area, agent_id, image
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         $stmt->execute([
             $title, $description, $price, $property_type, $view_count,
             $id_properti, $tipe_properti, $luas_tanah, $luas_bangunan, $arah_bangunan,
             $jenis_bangunan, $jumlah_lantai, $kamar_tidur, $kamar_pembantu, $kamar_mandi,
             $daya_listrik, $saluran_air, $jalur_telepon, $interior, $garasi_parkir, $sertifikat,
-            $province, $regency, $district_or_area, $agent_id
+            $province, $regency, $district_or_area, $agent_id, null
         ]);
 
-        $property_id = $pdo->lastInsertId(); // Get the ID of the newly inserted property
+        $property_id = $pdo->lastInsertId();
 
-        // Pindahkan gambar dari tabel temporary (property_images_temp) ke tabel utama (property_images)
-        // dan hapus dari temporary
+        // Pindahkan gambar dari tabel temporary
         $image_insert_count = 0;
         if (!empty($uploaded_image_ids)) {
-            // Gunakan IN clause untuk mengambil semua gambar sekaligus
             $in_placeholders = str_repeat('?,', count($uploaded_image_ids) - 1) . '?';
-            $stmt_fetch_temp_images = $pdo->prepare("SELECT image_path FROM property_images_temp WHERE id IN ($in_placeholders)");
+            $stmt_fetch_temp_images = $pdo->prepare("SELECT id, image_path FROM property_images_temp WHERE id IN ($in_placeholders)");
             $stmt_fetch_temp_images->execute($uploaded_image_ids);
-            $temp_images = $stmt_fetch_temp_images->fetchAll(PDO::FETCH_COLUMN);
+            $temp_images = $stmt_fetch_temp_images->fetchAll(PDO::FETCH_ASSOC);
 
             if (!empty($temp_images)) {
-                $pdo->beginTransaction(); // Mulai transaksi untuk integritas data
                 $stmt_insert_main_image = $pdo->prepare("INSERT INTO property_images (property_id, image_path) VALUES (?, ?)");
-                foreach ($temp_images as $image_path_temp) {
-                    $stmt_insert_main_image->execute([$property_id, $image_path_temp]);
+                foreach ($temp_images as $image) {
+                    $stmt_insert_main_image->execute([$property_id, $image['image_path']]);
                     $image_insert_count++;
                 }
-                // Hapus gambar dari tabel temporary setelah berhasil dipindahkan
                 $stmt_delete_temp_images = $pdo->prepare("DELETE FROM property_images_temp WHERE id IN ($in_placeholders)");
                 $stmt_delete_temp_images->execute($uploaded_image_ids);
-                $pdo->commit(); // Commit transaksi
+            } else {
+                $upload_messages[] = "<span style='color: orange;'>Tidak ada gambar ditemukan di tabel sementara untuk ID: " . implode(',', $uploaded_image_ids) . "</span>";
             }
+        } else {
+            $upload_messages[] = "<span style='color: orange;'>Tidak ada ID gambar yang dikirim untuk diproses.</span>";
         }
+
+        $pdo->commit();
 
         if ($image_insert_count > 0) {
             $upload_messages[] = "<span class='success-message'>Properti berhasil diunggah dengan " . $image_insert_count . " gambar!</span>";
@@ -101,8 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } catch (PDOException $e) {
-        $pdo->rollBack(); // Rollback jika ada error
-        $upload_messages[] = "<span class='error-message'>Error mengunggah properti: " . $e->getMessage() . "</span>";
+        $pdo->rollBack();
+        $upload_messages[] = "<span class='error-message'>Error mengunggah properti: " . $e->getMessage() . " (Code: " . $e->getCode() . ")</span>";
     }
 }
 
@@ -113,21 +133,20 @@ $property_types = [
     "Ruko", "Rumah", "Rumah Kost", "Tanah"
 ];
 
-// Ambil daftar provinsi dari database
+// Ambil daftar provinsi
 $provinces_stmt = $pdo->query("SELECT id, name FROM provinces ORDER BY name ASC");
 $provinces = $provinces_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Ambil daftar kota/kabupaten dari database untuk di-cache di JS
+// Ambil daftar kota/kabupaten
 $regencies_data_js = [];
 $regencies_stmt = $pdo->query("SELECT p.name AS province_name, r.name AS regency_name FROM regencies r JOIN provinces p ON r.province_id = p.id ORDER BY p.name, r.name ASC");
 while($row = $regencies_stmt->fetch(PDO::FETCH_ASSOC)) {
     $regencies_data_js[$row['province_name']][] = $row['regency_name'];
 }
 
-// Ambil daftar agen dari database
+// Ambil daftar agen
 $stmt_agents = $pdo->query("SELECT id, name FROM agents ORDER BY name ASC");
 $agents = $stmt_agents->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <div class="admin-container">
@@ -157,6 +176,49 @@ $agents = $stmt_agents->fetchAll(PDO::FETCH_ASSOC);
                 <option value="<?php echo htmlspecialchars($type); ?>"><?php echo htmlspecialchars($type); ?></option>
             <?php endforeach; ?>
         </select>
+        
+        <h3>Spesifikasi Properti:</h3>
+        <label for="luas_tanah">Luas Tanah (m2):</label>
+        <input type="number" name="luas_tanah" placeholder="Contoh: 1628">
+        
+        <label for="luas_bangunan">Luas Bangunan (m2):</label>
+        <input type="number" name="luas_bangunan" placeholder="Contoh: 800">
+        
+        <label for="arah_bangunan">Arah Bangunan:</label>
+        <input type="text" name="arah_bangunan" placeholder="Contoh: Timur">
+        
+        <label for="jenis_bangunan">Jenis Bangunan:</label>
+        <input type="text" name="jenis_bangunan" placeholder="Contoh: Residential">
+        
+        <label for="jumlah_lantai">Jumlah Lantai:</label>
+        <input type="number" name="jumlah_lantai" placeholder="Contoh: 2">
+        
+        <label for="kamar_tidur">Kamar Tidur:</label>
+        <input type="number" name="kamar_tidur" placeholder="Contoh: 8">
+        
+        <label for="kamar_pembantu">Kamar Pembantu:</label>
+        <input type="number" name="kamar_pembantu" placeholder="Contoh: 1">
+        
+        <label for="kamar_mandi">Kamar Mandi:</label>
+        <input type="number" name="kamar_mandi" placeholder="Contoh: 7">
+        
+        <label for="daya_listrik">Daya Listrik (VA):</label>
+        <input type="number" name="daya_listrik" placeholder="Contoh: 2200">
+        
+        <label for="saluran_air">Saluran Air:</label>
+        <input type="text" name="saluran_air" placeholder="Contoh: PDAM">
+        
+        <label for="jalur_telepon">Jalur Telepon:</label>
+        <input type="text" name="jalur_telepon" placeholder="Contoh: Ada">
+        
+        <label for="interior">Interior:</label>
+        <input type="text" name="interior" placeholder="Contoh: Full Furnished">
+        
+        <label for="garasi_parkir">Garasi/Parkir:</label>
+        <input type="text" name="garasi_parkir" placeholder="Contoh: Garasi 2 Mobil">
+        
+        <label for="sertifikat">Sertifikat:</label>
+        <input type="text" name="sertifikat" placeholder="Contoh: SHM">
 
         <h3>Lokasi Properti:</h3>
         <label for="province">Provinsi:</label>
@@ -191,6 +253,7 @@ $agents = $stmt_agents->fetchAll(PDO::FETCH_ASSOC);
             <?php endforeach; ?>
         </select>
         <small>Pilih agen yang akan bertanggung jawab atas properti ini.</small>
+
         <h3>Upload Gambar (Maksimal 5)</h3>
         <input type="file" id="imageUpload" name="images[]" accept="image/*" multiple="multiple">
         <small>Pilih hingga 5 gambar untuk properti ini. Gambar akan diunggah segera setelah dipilih.</small>
@@ -210,13 +273,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- JavaScript untuk Cascading Dropdown Lokasi ---
     const provinceSelect = document.getElementById('provinceSelect');
     const regencySelect = document.getElementById('regencySelect');
-    // regenciesData diambil dari PHP, berisi mapping provinsi ke array kota/kabupaten
-    const regenciesData = <?php echo json_encode($regencies_data_js); ?>; 
+    const regenciesData = <?php echo json_encode($regencies_data_js); ?>;
 
     provinceSelect.addEventListener('change', function() {
         const selectedProvince = this.value;
-        regencySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>'; // Reset kota/kabupaten
-        regencySelect.disabled = true; // Nonaktifkan sampai ada provinsi terpilih
+        regencySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
+        regencySelect.disabled = true;
 
         if (selectedProvince && regenciesData[selectedProvince]) {
             regenciesData[selectedProvince].forEach(regency => {
@@ -225,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 option.textContent = regency;
                 regencySelect.appendChild(option);
             });
-            regencySelect.disabled = false; // Aktifkan dropdown kota/kabupaten
+            regencySelect.disabled = false;
         }
     });
 
@@ -235,8 +297,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const imageUploadMessage = document.getElementById('imageUploadMessage');
     const uploadedImageIdsInput = document.getElementById('uploadedImageIds');
     const maxImages = 5;
-    let currentImageCount = 0; // Menghitung jumlah gambar yang sudah berhasil diupload via AJAX
-    let imageIdMap = {}; // Untuk menyimpan mapping ID gambar temp dengan elemen thumbnail (contoh: {123: true, 456: true})
+    let currentImageCount = 0;
+    let imageIdMap = {};
 
     imageUploadInput.addEventListener('change', function(event) {
         const files = event.target.files;
@@ -258,23 +320,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         filesToUpload.forEach(file => {
             if (currentImageCount >= maxImages) {
-                return; // Lewati jika sudah mencapai batas saat iterasi
+                return;
             }
 
             const formData = new FormData();
-            formData.append('image', file); // Nama 'image' harus sesuai dengan $_FILES di upload_image_ajax.php
+            formData.append('image', file);
 
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'upload_image_ajax.php', true); // Kirim ke skrip AJAX PHP
-            
-            // Buat thumbnail loading
+            xhr.open('POST', 'upload_image_ajax.php', true);
+
             const thumbnailItem = document.createElement('div');
             thumbnailItem.className = 'current-image-item loading';
             thumbnailItem.innerHTML = `<img src="" alt="Uploading..." style="opacity: 0.5;">
-                                     <span class="upload-progress">0%</span>`;
+                                      <span class="upload-progress">0%</span>`;
             uploadedImageThumbnailsDiv.appendChild(thumbnailItem);
 
-            // Event listener untuk progress upload
             xhr.upload.addEventListener('progress', function(e) {
                 if (e.lengthComputable) {
                     const percent = Math.round((e.loaded / e.total) * 100);
@@ -282,40 +342,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Event listener saat request AJAX selesai
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     thumbnailItem.classList.remove('loading');
                     const progressSpan = thumbnailItem.querySelector('.upload-progress');
-                    if (progressSpan) progressSpan.remove(); // Hapus indikator progress
+                    if (progressSpan) progressSpan.remove();
 
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success) {
                             thumbnailItem.querySelector('img').src = '../Uploads/' + response.image_path;
                             thumbnailItem.querySelector('img').style.opacity = 1;
-                            
-                            // Tambahkan tombol hapus untuk gambar yang baru diupload
+
                             const deleteBtn = document.createElement('a');
                             deleteBtn.className = 'delete-image-btn';
                             deleteBtn.textContent = 'X';
                             deleteBtn.title = 'Hapus gambar ini';
-                            
-                            // Logika penghapusan thumbnail dari DOM dan dari daftar ID
+
                             deleteBtn.onclick = function(e) {
                                 e.preventDefault();
                                 if (confirm('Apakah Anda yakin ingin menghapus gambar ini?')) {
-                                    // Kirim permintaan AJAX ke server untuk menghapus file fisik dan dari tabel temp
                                     fetch('delete_image_ajax.php?id=' + response.image_id, {
-                                        method: 'GET' // Atau 'POST' jika Anda kirim data di body
+                                        method: 'GET'
                                     })
                                     .then(res => res.json())
                                     .then(data => {
                                         if (data.success) {
-                                            thumbnailItem.remove(); // Hapus thumbnail dari DOM
-                                            currentImageCount--; // Kurangi hitungan gambar
-                                            delete imageIdMap[response.image_id]; // Hapus ID dari map
-                                            updateHiddenImageIds(); // Perbarui hidden input
+                                            thumbnailItem.remove();
+                                            currentImageCount--;
+                                            delete imageIdMap[response.image_id];
+                                            updateHiddenImageIds();
                                             imageUploadMessage.textContent = `Gambar ${response.image_path} dihapus. Sisa slot: ${maxImages - currentImageCount}.`;
                                         } else {
                                             alert('Gagal menghapus gambar: ' + data.error);
@@ -330,26 +386,24 @@ document.addEventListener('DOMContentLoaded', function() {
                             thumbnailItem.appendChild(deleteBtn);
 
                             currentImageCount++;
-                            imageIdMap[response.image_id] = true; // Simpan ID gambar temporer
-                            updateHiddenImageIds(); // Perbarui hidden input
+                            imageIdMap[response.image_id] = true;
+                            updateHiddenImageIds();
                             imageUploadMessage.textContent = `Berhasil mengunggah ${currentImageCount} gambar. Sisa slot: ${maxImages - currentImageCount}.`;
                         } else {
-                            thumbnailItem.remove(); // Hapus thumbnail loading jika gagal
+                            thumbnailItem.remove();
                             imageUploadMessage.textContent = `Gagal mengunggah ${file.name}: ${response.error || 'Terjadi kesalahan.'}`;
                         }
                     } else {
-                        thumbnailItem.remove(); // Hapus thumbnail loading jika gagal
+                        thumbnailItem.remove();
                         imageUploadMessage.textContent = `Terjadi kesalahan server saat mengunggah ${file.name}. Status: ${xhr.status}`;
                     }
-                    // Reset input file agar bisa memilih file yang sama lagi jika perlu
                     imageUploadInput.value = '';
                 }
             };
-            xhr.send(formData); // Kirim permintaan AJAX
+            xhr.send(formData);
         });
     });
 
-    // Fungsi untuk memperbarui hidden input dengan daftar ID gambar sementara
     function updateHiddenImageIds() {
         const ids = Object.keys(imageIdMap).filter(id => imageIdMap[id]).join(',');
         uploadedImageIdsInput.value = ids;

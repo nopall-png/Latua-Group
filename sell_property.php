@@ -2,11 +2,11 @@
 // Tentukan email admin yang akan menerima pesan
 $to_email = "latuealand@gmail.com"; // Ganti dengan alamat email admin Anda
 
-$form_message = "";
-$form_messages_type = "";
+// Sertakan koneksi database (hanya untuk proses backend jika diperlukan)
+include 'includes/db_connect.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Ambil dan bersihkan data formulir
+// Proses data jika ada permintaan AJAX
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajax_submit'])) {
     $nama_lengkap = trim($_POST['nama_lengkap'] ?? '');
     $alamat_email = trim($_POST['alamat_email'] ?? '');
     $nomor_handphone = trim($_POST['nomor_handphone'] ?? '');
@@ -17,43 +17,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Validasi dasar
     if (empty($nama_lengkap) || empty($alamat_email) || empty($nomor_handphone) || empty($perihal) || empty($status_properti)) {
-        $form_message = "Semua kolom yang ditandai * wajib diisi.";
-        $form_messages_type = "error-message";
+        echo json_encode(['status' => 'error', 'message' => 'Semua kolom yang ditandai * wajib diisi.']);
+        exit();
     } elseif (!filter_var($alamat_email, FILTER_VALIDATE_EMAIL)) {
-        $form_message = "Format alamat email tidak valid.";
-        $form_messages_type = "error-message";
+        echo json_encode(['status' => 'error', 'message' => 'Format alamat email tidak valid.']);
+        exit();
     } else {
-        // Buat subjek dan isi email
-        $subject = "Pesan dari Formulir Hubungi Kami: " . $perihal;
-        $email_content = "Nama Lengkap: " . $nama_lengkap . "\n";
-        $email_content .= "Alamat Email: " . $alamat_email . "\n";
-        $email_content .= "Nomor Handphone: " . $nomor_handphone . "\n";
-        $email_content .= "Metode Kontak Pilihan: " . $metode_kontak . "\n";
-        $email_content .= "Perihal: " . $perihal . "\n";
-        $email_content .= "Status Properti: " . $status_properti . "\n";
-        $email_content .= "Detail Properti: \n" . $detail_properti . "\n";
+        try {
+            $stmt = $pdo->prepare("INSERT INTO pending_properties (user_name, user_email, user_phone, perihal, status_properti, detail_properti, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+            $stmt->execute([$nama_lengkap, $alamat_email, $nomor_handphone, $perihal, $status_properti, $detail_properti]);
 
-        // Atur header email
-        $email_headers = "From: " . $nama_lengkap . " <" . $alamat_email . ">\r\n";
-        $email_headers .= "Reply-To: " . $alamat_email . "\r\n";
-        $email_headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+            // Buat subjek dan isi email
+            $subject = "Pesan dari Formulir Hubungi Kami: " . $perihal;
+            $email_content = "Nama Lengkap: " . $nama_lengkap . "\n";
+            $email_content .= "Alamat Email: " . $alamat_email . "\n";
+            $email_content .= "Nomor Handphone: " . $nomor_handphone . "\n";
+            $email_content .= "Metode Kontak Pilihan: " . $metode_kontak . "\n";
+            $email_content .= "Perihal: " . $perihal . "\n";
+            $email_content .= "Status Properti: " . $status_properti . "\n";
+            $email_content .= "Detail Properti: \n" . $detail_properti . "\n";
 
-        // Kirim email
-        if (mail($to_email, $subject, $email_content, $email_headers)) {
-            // Redirect setelah sukses untuk menghindari resubmisi form
-            header('Location: hubungi_kami.php?status=success');
+            // Atur header email
+            $email_headers = "From: " . $nama_lengkap . " <" . $alamat_email . ">\r\n";
+            $email_headers .= "Reply-To: " . $alamat_email . "\r\n";
+            $email_headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+            // Kirim email (opsional, hanya untuk notifikasi)
+            mail($to_email, $subject, $email_content, $email_headers);
+
+            echo json_encode(['status' => 'success', 'message' => 'Pesan berhasil dikirim. Terimakasih']);
             exit();
-        } else {
-            $form_message = "Maaf, terjadi kesalahan saat mengirim pesan. Silakan coba lagi.";
-            $form_messages_type = "error-message";
+        } catch (PDOException $e) {
+            echo json_encode(['status' => 'error', 'message' => 'Error menyimpan pengajuan: ' . $e->getMessage()]);
+            exit();
         }
     }
-}
-
-// Cek jika ada status sukses dari redirect
-if (isset($_GET['status']) && $_GET['status'] == 'success') {
-    $form_message = "Pesan Anda berhasil dikirim. Terima kasih!";
-    $form_messages_type = "success-message";
 }
 
 // Sertakan header
@@ -120,7 +118,7 @@ include 'includes/header.php';
     .radio-group label {
         font-weight: normal;
         font-size: 14px;
-        color: #333; /* Warna font diubah ke hitam gelap untuk kontras dengan latar belakang */
+        color: #333;
     }
     .btn-primary {
         display: inline-block;
@@ -153,14 +151,6 @@ include 'includes/header.php';
     .error-message {
         color: white;
         background-color: #DC3545;
-        padding: 10px;
-        border-radius: 5px;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    .success-message {
-        color: white;
-        background-color: #28A745;
         padding: 10px;
         border-radius: 5px;
         text-align: center;
@@ -205,11 +195,9 @@ include 'includes/header.php';
 
 <div class="container">
     <h2>Hubungi Kami</h2>
-    <?php if (!empty($form_message)): ?>
-        <p class="<?php echo $form_messages_type; ?>"><?php echo htmlspecialchars($form_message); ?></p>
-    <?php endif; ?>
+    <div id="message"></div>
     
-    <form action="hubungi_kami.php" method="POST" class="contact-form">
+    <form id="contact-form" class="contact-form">
         <div class="form-group">
             <label for="nama_lengkap">Nama Lengkap <span>*</span></label>
             <input type="text" id="nama_lengkap" name="nama_lengkap" required>
@@ -272,6 +260,32 @@ include 'includes/header.php';
 <a href="https://wa.me/62123456789" class="whatsapp-chat">
     <i class="fab fa-whatsapp"></i> Butuh bantuan? Chat dengan kami
 </a>
+
+<script>
+document.getElementById('contact-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Mencegah reload halaman
+
+    const formData = new FormData(this);
+    formData.append('ajax_submit', true);
+
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert(data.message); // Pop-up pesan sukses
+            this.reset(); // Reset form setelah sukses
+        } else {
+            alert(data.message); // Pop-up pesan error
+        }
+    })
+    .catch(error => {
+        alert('Terjadi kesalahan: ' + error.message);
+    });
+});
+</script>
 
 <?php
 // Sertakan footer sebagai elemen terpisah

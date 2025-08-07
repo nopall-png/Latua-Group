@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $message = ''; // Pesan untuk hero images
-$upload_messages_properties = []; // Pesan untuk properti
+$upload_messages_properties = []; // Pesan untuk properti dan pengajuan
 $agent_message = ''; // Pesan untuk agen
 
 // =========================================================
@@ -18,9 +18,9 @@ $agent_message = ''; // Pesan untuk agen
 // Proses upload gambar hero baru
 if (isset($_POST['upload_hero'])) {
     if (isset($_FILES['hero_image']) && $_FILES['hero_image']['error'] == UPLOAD_ERR_OK) {
-        $target_dir = "../Uploads/hero/"; // Pastikan folder ini ada dan bisa ditulis
+        $target_dir = "../Uploads/hero/";
         if (!is_dir($target_dir)) {
-            mkdir($target_dir, 0755, true); // Buat folder jika belum ada
+            mkdir($target_dir, 0755, true);
         }
 
         $file_extension = strtolower(pathinfo($_FILES['hero_image']['name'], PATHINFO_EXTENSION));
@@ -29,13 +29,11 @@ if (isset($_POST['upload_hero'])) {
         if (!in_array($file_extension, $allowed_extensions)) {
             $message = "<p class='error-message'>Tipe file tidak diizinkan. Hanya JPG, JPEG, PNG, GIF yang diizinkan.</p>";
         } else {
-            // Langsung memindahkan file TANPA pemrosesan gambar (tanpa GD Library)
             $new_file_name = uniqid('hero_', true) . '.' . $file_extension;
             $upload_path = $target_dir . $new_file_name;
 
             if (move_uploaded_file($_FILES['hero_image']['tmp_name'], $upload_path)) {
                 try {
-                    // Gambar yang baru diupload defaultnya TIDAK aktif, admin harus mengaktifkannya
                     $stmt = $pdo->prepare("INSERT INTO hero_images (image_path, is_active) VALUES (?, 0)");
                     $stmt->execute([$new_file_name]);
                     $message = "<p class='success-message'>Gambar hero berhasil diunggah! Sekarang Anda bisa 'Set Aktif' untuk menambahkannya ke slideshow.</p>";
@@ -54,15 +52,16 @@ if (isset($_POST['upload_hero'])) {
 // Proses set/unset gambar hero aktif
 if (isset($_GET['action']) && isset($_GET['hero_id']) && is_numeric($_GET['hero_id'])) {
     $hero_id = $_GET['hero_id'];
-    $action = $_GET['action']; // 'set_active' atau 'set_inactive'
+    $action = $_GET['action'];
 
     if ($action == 'set_active') {
         try {
-            // Dapatkan jumlah gambar aktif saat ini
             $stmt_count = $pdo->query("SELECT COUNT(*) FROM hero_images WHERE is_active = 1");
             $active_count = $stmt_count->fetchColumn();
 
-            if ($active_count < 3) { // Batasi maksimal 3 gambar aktif untuk slideshow
+            if ($active_count < 3) {
+                $stmt_deactivate = $pdo->prepare("UPDATE hero_images SET is_active = 0 WHERE is_active = 1");
+                $stmt_deactivate->execute();
                 $stmt_activate = $pdo->prepare("UPDATE hero_images SET is_active = 1 WHERE id = ?");
                 $stmt_activate->execute([$hero_id]);
                 $message = "<p class='success-message'>Gambar hero berhasil diatur sebagai aktif!</p>";
@@ -73,7 +72,6 @@ if (isset($_GET['action']) && isset($_GET['hero_id']) && is_numeric($_GET['hero_
             $message = "<p class='error-message'>Error mengatur gambar aktif: " . $e->getMessage() . "</p>";
         }
     } elseif ($action == 'set_inactive') {
-        // Logika menonaktifkan gambar hero
         try {
             $stmt_deactivate = $pdo->prepare("UPDATE hero_images SET is_active = 0 WHERE id = ?");
             $stmt_deactivate->execute([$hero_id]);
@@ -82,7 +80,7 @@ if (isset($_GET['action']) && isset($_GET['hero_id']) && is_numeric($_GET['hero_
             $message = "<p class='error-message'>Error menonaktifkan gambar: " . $e->getMessage() . "</p>";
         }
     }
-    header('Location: ' . strtok($_SERVER["REQUEST_URI"], '?') . '?msg=' . urlencode(strip_tags($message))); // Pass message via URL
+    header('Location: ' . strtok($_SERVER["REQUEST_URI"], '?') . '?msg=' . urlencode(strip_tags($message)));
     exit();
 }
 
@@ -95,11 +93,9 @@ if (isset($_GET['delete_hero_id']) && is_numeric($_GET['delete_hero_id'])) {
 
     if ($hero_image_data) {
         try {
-            // Hapus dari database terlebih dahulu
             $stmt_delete = $pdo->prepare("DELETE FROM hero_images WHERE id = ?");
             $stmt_delete->execute([$delete_id]);
 
-            // Kemudian coba hapus file fisik, tetapi jangan gagal jika file sudah tidak ada
             $file_path = '../Uploads/hero/' . $hero_image_data['image_path'];
             if (file_exists($file_path)) {
                 unlink($file_path);
@@ -113,7 +109,7 @@ if (isset($_GET['delete_hero_id']) && is_numeric($_GET['delete_hero_id'])) {
     } else {
         $message = "<p class='error-message'>Gambar hero tidak ditemukan.</p>";
     }
-    header('Location: ' . strtok($_SERVER["REQUEST_URI"], '?') . '?msg=' . urlencode(strip_tags($message))); // Pass message via URL
+    header('Location: ' . strtok($_SERVER["REQUEST_URI"], '?') . '?msg=' . urlencode(strip_tags($message)));
     exit();
 }
 
@@ -125,20 +121,20 @@ if (isset($_GET['delete_hero_id']) && is_numeric($_GET['delete_hero_id'])) {
 if (isset($_POST['add_agent'])) {
     $agent_name = trim($_POST['agent_name']);
     $phone_number = trim($_POST['phone_number']);
-    $email = trim($_POST['email'] ?? ''); // Menambahkan input email, default kosong
+    $email = trim($_POST['email'] ?? '');
 
     if (empty($agent_name) || empty($phone_number)) {
         $agent_message = "<p class='error-message'>Nama agen dan nomor telepon harus diisi.</p>";
     } else {
         $agent_photo_path = null;
         if (isset($_FILES['agent_photo']) && $_FILES['agent_photo']['error'] == UPLOAD_ERR_OK) {
-            $target_dir = "../Uploads/agents/"; // Folder untuk foto agen
+            $target_dir = "../Uploads/agents/";
             if (!is_dir($target_dir)) {
                 mkdir($target_dir, 0755, true);
             }
 
             $file_extension = strtolower(pathinfo($_FILES['agent_photo']['name'], PATHINFO_EXTENSION));
-            $allowed_extensions = ['jpg', 'jpeg', 'png']; // Batasi ekstensi untuk foto agen
+            $allowed_extensions = ['jpg', 'jpeg', 'png'];
 
             if (in_array($file_extension, $allowed_extensions)) {
                 $new_file_name = uniqid('agent_', true) . '.' . $file_extension;
@@ -154,7 +150,7 @@ if (isset($_POST['add_agent'])) {
             }
         }
 
-        if (empty($agent_message)) { // Lanjutkan jika tidak ada error upload foto
+        if (empty($agent_message)) {
             try {
                 $stmt = $pdo->prepare("INSERT INTO agents (name, phone_number, email, photo_path) VALUES (?, ?, ?, ?)");
                 $stmt->execute([$agent_name, $phone_number, $email, $agent_photo_path]);
@@ -180,9 +176,9 @@ if (isset($_GET['delete_agent_id']) && is_numeric($_GET['delete_agent_id'])) {
             $stmt_delete_agent = $pdo->prepare("DELETE FROM agents WHERE id = ?");
             $stmt_delete_agent->execute([$delete_agent_id]);
 
-            // Hapus file foto agen jika ada
-            if ($agent_photo_data['photo_path'] && file_exists('../Uploads/agents/' . $agent_photo_data['photo_path'])) {
-                unlink('../Uploads/agents/' . $agent_photo_data['photo_path']);
+            $file_path = '../Uploads/agents/' . $agent_photo_data['photo_path'];
+            if (file_exists($file_path)) {
+                unlink($file_path);
             }
             $agent_message = "<p class='success-message'>Agen berhasil dihapus!</p>";
         } catch (PDOException $e) {
@@ -195,88 +191,99 @@ if (isset($_GET['delete_agent_id']) && is_numeric($_GET['delete_agent_id'])) {
     exit();
 }
 
-// Tangani pesan dari redirect (untuk hero images dan agen)
-if (isset($_GET['msg'])) {
-    $message = "<p>" . htmlspecialchars($_GET['msg']) . "</p>";
-}
-if (isset($_GET['agent_msg'])) {
-    $agent_message = "<p>" . htmlspecialchars($_GET['agent_msg']) . "</p>";
-}
-
-// Ambil semua gambar hero dari database (untuk tampilan di admin)
-$stmt_hero_images = $pdo->query("SELECT * FROM hero_images ORDER BY uploaded_at DESC");
-$hero_images = $stmt_hero_images->fetchAll();
-
-// Ambil semua agen dari database
-$stmt_agents = $pdo->query("SELECT * FROM agents ORDER BY name ASC");
-$agents = $stmt_agents->fetchAll();
-
-// =========================================================
-// Logika Pengelolaan PROPERTI
-// =========================================================
-
-// Process property deletion
-if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
-    $delete_id = $_GET['delete_id'];
-    try {
-        $stmt = $pdo->prepare("DELETE FROM properties WHERE id = ?");
-        $stmt->execute([$delete_id]);
-        $upload_messages_properties[] = "<p class='success-message'>Property deleted successfully!</p>";
-    } catch (PDOException $e) {
-        $upload_messages_properties[] = "<p class='error-message'>Error deleting property: " . $e->getMessage() . "</p>";
-    }
+// Ambil data agen
+$agents = [];
+try {
+    $stmt_agents = $pdo->query("SELECT * FROM agents ORDER BY name ASC");
+    $agents = $stmt_agents->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $agents = [];
+    error_log("Error fetching agents: " . $e->getMessage());
 }
 
-// Fetch properties and their first image
-$sql = "
-    SELECT
-        p.id,
-        p.title,
-        p.description,
-        p.price,
-        p.property_type,
-        pi.image_path AS main_image_path
-    FROM
-        properties p
-    LEFT JOIN
-        (SELECT property_id, MIN(id) AS min_img_id FROM property_images GROUP BY property_id) AS min_images
-    ON
-        p.id = min_images.property_id
-    LEFT JOIN
-        property_images pi
-    ON
-        min_images.min_img_id = pi.id
-    ORDER BY
-        p.property_type DESC, p.id DESC
-";
-$stmt = $pdo->query($sql);
-$properties = $stmt->fetchAll();
+// Ambil data hero images
+$hero_images = [];
+try {
+    $stmt_hero = $pdo->query("SELECT * FROM hero_images ORDER BY uploaded_at DESC");
+    $hero_images = $stmt_hero->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $hero_images = [];
+    error_log("Error fetching hero images: " . $e->getMessage());
+}
 
-// Group properties by type
+// Ambil data properti untuk dijual dengan gambar dari property_images
 $properties_for_sale = [];
-$properties_for_rent = [];
+try {
+    $stmt_sale = $pdo->prepare("
+        SELECT p.*, pi.image_path AS main_image_path 
+        FROM properties p 
+        LEFT JOIN property_images pi ON p.id = pi.property_id 
+        WHERE p.property_type = ? 
+        ORDER BY p.created_at DESC
+    ");
+    $stmt_sale->execute(['for_sale']);
+    $properties_for_sale = $stmt_sale->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $properties_for_sale = [];
+    error_log("Error fetching properties for sale: " . $e->getMessage());
+}
 
-foreach ($properties as $property) {
-    if ($property['property_type'] == 'for_sale') {
-        $properties_for_sale[] = $property;
-    } elseif ($property['property_type'] == 'for_rent') {
-        $properties_for_rent[] = $property;
+// Ambil data properti untuk disewakan dengan gambar dari property_images
+$properties_for_rent = [];
+try {
+    $stmt_rent = $pdo->prepare("
+        SELECT p.*, pi.image_path AS main_image_path 
+        FROM properties p 
+        LEFT JOIN property_images pi ON p.id = pi.property_id 
+        WHERE p.property_type = ? 
+        ORDER BY p.created_at DESC
+    ");
+    $stmt_rent->execute(['for_rent']);
+    $properties_for_rent = $stmt_rent->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $properties_for_rent = [];
+    error_log("Error fetching properties for rent: " . $e->getMessage());
+}
+
+// Ambil data pengajuan properti dari pengguna
+$pending_properties = [];
+try {
+    $stmt_pending = $pdo->query("SELECT * FROM pending_properties ORDER BY created_at DESC");
+    $pending_properties = $stmt_pending->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $pending_properties = [];
+    error_log("Error fetching pending properties: " . $e->getMessage());
+}
+
+// Proses hapus pengajuan properti
+if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id'])) {
+    $delete_pending_id = $_GET['delete_pending_id'];
+    try {
+        $stmt_delete_pending = $pdo->prepare("DELETE FROM pending_properties WHERE id = ?");
+        $stmt_delete_pending->execute([$delete_pending_id]);
+        $upload_messages_properties[] = "<p class='success-message'>Pengajuan properti berhasil dihapus!</p>";
+    } catch (PDOException $e) {
+        $upload_messages_properties[] = "<p class='error-message'>Error menghapus pengajuan: " . $e->getMessage() . "</p>";
     }
+    header('Location: ' . strtok($_SERVER["REQUEST_URI"], '?'));
+    exit();
 }
 ?>
 
 <div class="admin-container">
-    <h1>Admin Dashboard</h1>
+    <h2>Admin Dashboard</h2>
     <p>Welcome, Admin! Manage your properties and site settings below.</p>
 
+    <!-- Section untuk Hero Images -->
     <div class="admin-section">
         <h2>Kelola Gambar Hero Halaman Utama</h2>
         <?php echo $message; ?>
 
         <form action="" method="POST" enctype="multipart/form-data" class="upload-hero-form">
-            <label for="hero_image">Unggah Gambar Hero Baru:</label>
-            <input type="file" name="hero_image" id="hero_image" accept="image/*" required>
-            <button type="submit" name="upload_hero">Unggah Gambar</button>
+            <h3>Unggah Gambar Hero Baru:</h3>
+            <label for="hero_image">Pilih File (Tidak ada file yang dipilih):</label>
+            <input type="file" name="hero_image" id="hero_image" accept="image/jpeg, image/png, image/gif" required>
+            <button type="submit" name="upload_hero" class="btn-upload">Unggah Gambar</button>
         </form>
 
         <h3>Gambar Hero yang Tersedia: (Maksimal 3 Aktif untuk Slideshow)</h3>
@@ -285,28 +292,16 @@ foreach ($properties as $property) {
         <?php else: ?>
             <div class="hero-image-grid">
                 <?php foreach ($hero_images as $img): ?>
-                    <?php
-                        $image_full_path = '../Uploads/hero/' . $img['image_path'];
-                        $image_exists = file_exists($image_full_path);
-                    ?>
-                    <div class="hero-image-item <?php echo $img['is_active'] ? 'active' : ''; ?>">
-                        <?php if ($image_exists): ?>
-                            <img src="<?php echo htmlspecialchars($image_full_path); ?>" alt="Hero Image">
-                        <?php else: ?>
-                            <div class="missing-image-placeholder">
-                                <i class="fas fa-exclamation-triangle"></i> Gambar Hilang<br>
-                                (<?php echo htmlspecialchars($img['image_path']); ?>)
-                            </div>
-                        <?php endif; ?>
+                    <div class="hero-image-item">
+                        <img src="../Uploads/hero/<?php echo htmlspecialchars($img['image_path']); ?>" alt="Hero Image">
                         <div class="hero-image-actions">
-                            <?php if (!$img['is_active']): ?>
-                                <a href="?action=set_active&hero_id=<?php echo $img['id']; ?>" class="btn-set-active" onclick="return confirm('Atur gambar ini sebagai hero aktif?');">Set Aktif</a>
-                                <a href="?delete_hero_id=<?php echo $img['id']; ?>" class="btn-delete" onclick="return confirm('Hapus gambar ini?');">Hapus</a>
+                            <?php if ($img['is_active'] == 0): ?>
+                                <a href="?action=set_active&hero_id=<?php echo $img['id']; ?>" class="btn-set-active" onclick="return confirm('Atur gambar ini sebagai hero aktif?');">Aktif</a>
                             <?php else: ?>
                                 <span class="active-badge">Aktif</span>
                                 <a href="?action=set_inactive&hero_id=<?php echo $img['id']; ?>" class="btn-delete" onclick="return confirm('Nonaktifkan gambar ini dari slideshow?');">Nonaktifkan</a>
-                                <a href="?delete_hero_id=<?php echo $img['id']; ?>" class="btn-delete" onclick="return confirm('Hapus gambar ini?');">Hapus</a>
                             <?php endif; ?>
+                            <a href="?delete_hero_id=<?php echo $img['id']; ?>" class="btn-delete" onclick="return confirmDeleteAgent(<?php echo $img['id']; ?>, 'hero');">Hapus</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -316,8 +311,9 @@ foreach ($properties as $property) {
     
     <hr style="margin: 40px 0; border: 0; border-top: 1px solid #ccc;">
 
+    <!-- Section untuk Agen -->
     <div class="admin-section">
-        <h2 class="agent-section-title">Kelola Agen</h2>
+        <h2>Kelola Agen</h2>
         <?php echo $agent_message; ?>
 
         <form action="" method="POST" enctype="multipart/form-data" class="upload-hero-form">
@@ -345,7 +341,7 @@ foreach ($properties as $property) {
                 <?php foreach ($agents as $agent): ?>
                     <div class="agent-card-admin">
                         <div class="agent-header">KONTAK AGEN</div>
-                        <a href="?delete_agent_id=<?php echo $agent['id']; ?>" class="delete-agent-button" onclick="return confirm('Anda yakin ingin menghapus agen <?php echo htmlspecialchars($agent['name']); ?>?');">
+                        <a href="?delete_agent_id=<?php echo $agent['id']; ?>" class="delete-agent-button" onclick="return confirmDeleteAgent(<?php echo $agent['id']; ?>, 'agent', '<?php echo htmlspecialchars($agent['name']); ?>');">
                             &times;
                         </a>
                         <div class="agent-photo-container">
@@ -372,7 +368,8 @@ foreach ($properties as $property) {
     </div>
 
     <hr style="margin: 40px 0; border: 0; border-top: 1px solid #ccc;">
-    
+
+    <!-- Section untuk Properti -->
     <div class="admin-section">
         <h2>Kelola Daftar Properti</h2>
         <button class="add-property-btn" onclick="location.href='upload_property.php'">Tambah Properti Baru</button>
@@ -388,8 +385,15 @@ foreach ($properties as $property) {
                 <div class="property-grid">
                     <?php foreach ($properties_for_sale as $property): ?>
                         <div class="property-card">
-                            <a href="../detail_property.php?id=<?php echo $property['id']; ?>" class="property-card-image-link">
-                                <img src="../Uploads/<?php echo htmlspecialchars($property['main_image_path'] ?? 'default.jpg'); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>">
+                            <a href="../detail_property.php?id=<?php echo $property['id']; ?>" class="property-card-link">
+                                <?php
+                                $image_path = !empty($property['main_image_path']) ? "../Uploads/" . htmlspecialchars($property['main_image_path']) : "../Uploads/default.jpg";
+                                if (file_exists($image_path)) {
+                                    echo "<img src='$image_path' alt='" . htmlspecialchars($property['title']) . "'>";
+                                } else {
+                                    echo "<img src='../Uploads/default.jpg' alt='" . htmlspecialchars($property['title']) . "'>";
+                                }
+                                ?>
                             </a>
                             <div class="property-card-content">
                                 <h3><?php echo htmlspecialchars($property['title']); ?></h3>
@@ -416,7 +420,14 @@ foreach ($properties as $property) {
                     <?php foreach ($properties_for_rent as $property): ?>
                         <div class="property-card">
                             <a href="../detail_property.php?id=<?php echo $property['id']; ?>" class="property-card-link">
-                                <img src="../Uploads/<?php echo htmlspecialchars($property['main_image_path'] ?? 'default.jpg'); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>">
+                                <?php
+                                $image_path = !empty($property['main_image_path']) ? "../Uploads/" . htmlspecialchars($property['main_image_path']) : "../Uploads/default.jpg";
+                                if (file_exists($image_path)) {
+                                    echo "<img src='$image_path' alt='" . htmlspecialchars($property['title']) . "'>";
+                                } else {
+                                    echo "<img src='../Uploads/default.jpg' alt='" . htmlspecialchars($property['title']) . "'>";
+                                }
+                                ?>
                             </a>
                             <div class="property-card-content">
                                 <h3><?php echo htmlspecialchars($property['title']); ?></h3>
@@ -434,10 +445,38 @@ foreach ($properties as $property) {
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- Section untuk Pengajuan Properti dari Pengguna -->
+    <div class="admin-section">
+        <h2>Pengajuan Properti dari Pengguna</h2>
+        <?php if (empty($pending_properties)): ?>
+            <p>Tidak ada pengajuan properti dari pengguna untuk saat ini.</p>
+        <?php else: ?>
+            <div class="property-grid">
+                <?php foreach ($pending_properties as $pending): ?>
+                    <div class="property-card">
+                        <div class="property-card-content">
+                            <h3>Pengajuan dari: <?php echo htmlspecialchars($pending['user_name']); ?></h3>
+                            <p><strong>Email:</strong> <?php echo htmlspecialchars($pending['user_email']); ?></p>
+                            <p><strong>Telepon:</strong> <?php echo htmlspecialchars($pending['user_phone']); ?></p>
+                            <p><strong>Perihal:</strong> <?php echo htmlspecialchars($pending['perihal']); ?></p>
+                            <p><strong>Status Properti:</strong> <?php echo htmlspecialchars($pending['status_properti']); ?></p>
+                            <p><strong>Detail:</strong> <?php echo htmlspecialchars($pending['detail_properti']); ?></p>
+                            <p><strong>Tanggal Pengajuan:</strong> <?php echo date('d/m/Y H:i', strtotime($pending['created_at'])); ?></p>
+                        </div>
+                        <div class="card-actions">
+                            <a href="javascript:void(0);" class="btn-edit" onclick="alert('Silakan salin detail ini dan unggah secara manual melalui opsi \'Tambah Properti Baru\'.');">Terima & Unggah</a>
+                            <a href="?delete_pending_id=<?php echo $pending['id']; ?>" class="btn-delete" onclick="return confirmDeleteAgent(<?php echo $pending['id']; ?>, 'pending');">Hapus</a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <script>
-// Fungsi JavaScript untuk konfirmasi hapus, baik untuk hero image atau agen
+// Fungsi JavaScript untuk konfirmasi hapus
 function confirmDeleteAgent(id, type, name = '') {
     let confirmMessage;
     let redirectUrl;
@@ -448,6 +487,9 @@ function confirmDeleteAgent(id, type, name = '') {
     } else if (type === 'agent') {
         confirmMessage = 'Anda yakin ingin menghapus agen ' + name + '?';
         redirectUrl = '?delete_agent_id=' + id;
+    } else if (type === 'pending') {
+        confirmMessage = 'Apakah Anda yakin ingin menghapus pengajuan ini?';
+        redirectUrl = '?delete_pending_id=' + id;
     }
 
     if (confirm(confirmMessage)) {

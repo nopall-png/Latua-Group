@@ -21,10 +21,16 @@ $upload_messages = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'];
     $description = $_POST['description'];
-    $price = $_POST['price'];
+    // Sanitasi input harga: hapus titik dan ubah koma menjadi titik untuk parsing
+    $price_input = str_replace(['.', ','], ['', '.'], $_POST['price']);
+    $price = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT, ['options' => ['default' => null]]);
+    if ($price === false || $price === null || $price < 0 || $price > 99999999.99) {
+        $upload_messages[] = "<span class='error-message'>Harga tidak valid. Harap masukkan angka positif hingga Rp 99.999.999,99.</span>";
+        $stmt_fetch = $pdo->prepare("SELECT price FROM properties WHERE id = ?");
+        $stmt_fetch->execute([$property_id]);
+        $price = $stmt_fetch->fetchColumn(); // Fallback to existing price
+    }
     $property_type = $_POST['property_type'];
-
-    // Spesifikasi baru
     $id_properti = $_POST['id_properti'];
     $tipe_properti = $_POST['tipe_properti'];
     $luas_tanah = $_POST['luas_tanah'];
@@ -41,19 +47,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $interior = $_POST['interior'];
     $garasi_parkir = $_POST['garasi_parkir'];
     $sertifikat = $_POST['sertifikat'];
-    $view_count = $_POST['view_count']; // Admin bisa mengedit view count
-    
-    // Lokasi baru
+    $view_count = $_POST['view_count'];
     $province = $_POST['province'] ?? '';
     $regency = $_POST['regency'] ?? '';
     $district_or_area = $_POST['district_or_area'] ?? '';
-
-    // ID Agen yang dipilih (baru)
     $agent_id = !empty($_POST['agent_id']) && is_numeric($_POST['agent_id']) ? $_POST['agent_id'] : null;
 
-
     try {
-        // Update query untuk menyertakan kolom lokasi dan agent_id
         $stmt = $pdo->prepare("UPDATE properties SET
             title = ?, description = ?, price = ?, property_type = ?,
             id_properti = ?, tipe_properti = ?, luas_tanah = ?, luas_bangunan = ?, arah_bangunan = ?,
@@ -63,68 +63,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             province = ?, regency = ?, district_or_area = ?, agent_id = ?
             WHERE id = ?");
 
-        $stmt->execute([
+        $params = [
             $title, $description, $price, $property_type,
             $id_properti, $tipe_properti, $luas_tanah, $luas_bangunan, $arah_bangunan,
             $jenis_bangunan, $jumlah_lantai, $kamar_tidur, $kamar_pembantu, $kamar_mandi,
             $daya_listrik, $saluran_air, $jalur_telepon, $interior, $garasi_parkir,
             $sertifikat, $view_count,
-            $province, $regency, $district_or_area, $agent_id, // Tambahkan $agent_id
+            $province, $regency, $district_or_area, $agent_id,
             $property_id
-        ]);
+        ];
 
+        error_log("Updating property ID $property_id with price: $price");
+        $stmt->execute($params);
         $upload_messages[] = "<span class='success-message'>Properti berhasil diperbarui!</span>";
-
-        // Handle multiple image uploads if new images are provided
-        if (isset($_FILES['images']['name']) && is_array($_FILES['images']['name']) && !empty(array_filter($_FILES['images']['name']))) {
-            $target_dir = "../Uploads/";
-            if (!is_dir($target_dir)) {
-                mkdir($target_dir, 0755, true);
-            }
-
-            $uploaded_count = 0;
-            $max_files_to_add = 5; // Max 5 new images per update
-
-            foreach ($_FILES['images']['name'] as $key => $name) {
-                if (!empty($name) && $_FILES['images']['error'][$key] == UPLOAD_ERR_OK) {
-                    // Dapatkan jumlah gambar yang sudah ada untuk properti ini
-                    $stmt_count_current_images = $pdo->prepare("SELECT COUNT(*) FROM property_images WHERE property_id = ?");
-                    $stmt_count_current_images->execute([$property_id]);
-                    $current_image_count = $stmt_count_current_images->fetchColumn();
-
-                    // Cek total gambar yang akan ada setelah upload
-                    if (($current_image_count + $uploaded_count) >= $max_files_to_add) { // Batas total gambar 5
-                        $upload_messages[] = "<span style='color: orange;'>Maksimal total 5 gambar untuk properti ini. Beberapa gambar baru dilewati.</span>";
-                        break;
-                    }
-
-                    $tmp_name = $_FILES['images']['tmp_name'][$key];
-                    $file_extension = pathinfo($name, PATHINFO_EXTENSION);
-                    $new_file_name = uniqid('img_', true) . '.' . $file_extension;
-                    $upload_path = $target_dir . $new_file_name;
-
-                    if (move_uploaded_file($tmp_name, $upload_path)) {
-                        $img_stmt = $pdo->prepare("INSERT INTO property_images (property_id, image_path) VALUES (?, ?)");
-                        $img_stmt->execute([$property_id, $new_file_name]);
-                        $uploaded_count++;
-                    } else {
-                        $upload_messages[] = "<span class='error-message'>Gagal memindahkan file upload: " . htmlspecialchars($name) . "</span>";
-                    }
-                } elseif ($_FILES['images']['error'][$key] != UPLOAD_ERR_NO_FILE) {
-                    $upload_messages[] = "<span class='error-message'>Error upload " . htmlspecialchars($name) . ": " . $_FILES['images']['error'][$key] . "</span>";
-                }
-            }
-            if ($uploaded_count > 0) {
-                $upload_messages[] = "<span class='success-message'>Berhasil mengunggah " . $uploaded_count . " gambar baru.</span>";
-            }
-        }
-
+        header("Location: ../index.php?updated=" . time());
+        exit();
     } catch (PDOException $e) {
         $upload_messages[] = "<span class='error-message'>Error memperbarui properti: " . $e->getMessage() . "</span>";
+        error_log("Error updating property: " . $e->getMessage());
+    }
+
+    // Handle multiple image uploads
+    if (isset($_FILES['images']['name']) && is_array($_FILES['images']['name']) && !empty(array_filter($_FILES['images']['name']))) {
+        $target_dir = "../Uploads/";
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir, 0755, true);
+        }
+
+        $uploaded_count = 0;
+        $max_files_to_add = 5;
+
+        $stmt_count_current_images = $pdo->prepare("SELECT COUNT(*) FROM property_images WHERE property_id = ?");
+        $stmt_count_current_images->execute([$property_id]);
+        $current_image_count = $stmt_count_current_images->fetchColumn();
+
+        foreach ($_FILES['images']['name'] as $key => $name) {
+            if (!empty($name) && $_FILES['images']['error'][$key] == UPLOAD_ERR_OK) {
+                if (($current_image_count + $uploaded_count) >= $max_files_to_add) {
+                    $upload_messages[] = "<span style='color: orange;'>Maksimal total 5 gambar untuk properti ini. Beberapa gambar baru dilewati.</span>";
+                    break;
+                }
+
+                $tmp_name = $_FILES['images']['tmp_name'][$key];
+                $file_extension = pathinfo($name, PATHINFO_EXTENSION);
+                $new_file_name = uniqid('img_', true) . '.' . $file_extension;
+                $upload_path = $target_dir . $new_file_name;
+
+                if (move_uploaded_file($tmp_name, $upload_path)) {
+                    $img_stmt = $pdo->prepare("INSERT INTO property_images (property_id, image_path) VALUES (?, ?)");
+                    $img_stmt->execute([$property_id, $new_file_name]);
+                    $uploaded_count++;
+                } else {
+                    $upload_messages[] = "<span class='error-message'>Gagal memindahkan file upload: " . htmlspecialchars($name) . "</span>";
+                }
+            } elseif ($_FILES['images']['error'][$key] != UPLOAD_ERR_NO_FILE) {
+                $upload_messages[] = "<span class='error-message'>Error upload " . htmlspecialchars($name) . ": " . $_FILES['images']['error'][$key] . "</span>";
+            }
+        }
+        if ($uploaded_count > 0) {
+            $upload_messages[] = "<span class='success-message'>Berhasil mengunggah " . $uploaded_count . " gambar baru.</span>";
+        }
     }
 }
 
-// Ambil data properti yang akan diedit (untuk mengisi form)
+// Ambil data properti
 $stmt_fetch = $pdo->prepare("SELECT * FROM properties WHERE id = ?");
 $stmt_fetch->execute([$property_id]);
 $property = $stmt_fetch->fetch();
@@ -135,12 +137,12 @@ if (!$property) {
     exit();
 }
 
-// Ambil gambar-gambar yang sudah ada untuk properti ini
+// Ambil gambar properti
 $stmt_current_images = $pdo->prepare("SELECT id, image_path FROM property_images WHERE property_id = ? ORDER BY id ASC");
 $stmt_current_images->execute([$property_id]);
 $current_images = $stmt_current_images->fetchAll();
 
-// Proses penghapusan gambar individual (jika ada)
+// Proses penghapusan gambar
 if (isset($_GET['delete_image_id']) && is_numeric($_GET['delete_image_id'])) {
     $delete_image_id = $_GET['delete_image_id'];
     $stmt_get_image_path = $pdo->prepare("SELECT image_path FROM property_images WHERE id = ? AND property_id = ?");
@@ -151,13 +153,11 @@ if (isset($_GET['delete_image_id']) && is_numeric($_GET['delete_image_id'])) {
         try {
             $stmt_delete_image = $pdo->prepare("DELETE FROM property_images WHERE id = ?");
             $stmt_delete_image->execute([$delete_image_id]);
-            // Hapus file fisik dari server
             $file_path = '../Uploads/' . $image_to_delete;
             if (file_exists($file_path)) {
                 unlink($file_path);
             }
             $upload_messages[] = "<span class='success-message'>Gambar berhasil dihapus.</span>";
-            // Redirect untuk membersihkan parameter GET
             header("Location: edit_property.php?id=" . $property_id . "&msg=" . urlencode(strip_tags($upload_messages[count($upload_messages)-1])));
             exit();
         } catch (PDOException $e) {
@@ -175,21 +175,23 @@ $property_types = [
     "Ruko", "Rumah", "Rumah Kost", "Tanah"
 ];
 
-// Ambil daftar provinsi dari database
+// Ambil daftar provinsi
 $provinces_stmt = $pdo->query("SELECT id, name FROM provinces ORDER BY name ASC");
 $provinces = $provinces_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Ambil daftar kota/kabupaten dari database untuk di-cache di JS
+// Ambil daftar kota/kabupaten
 $regencies_data_js = [];
 $regencies_stmt = $pdo->query("SELECT p.name AS province_name, r.name AS regency_name FROM regencies r JOIN provinces p ON r.province_id = p.id ORDER BY p.name, r.name ASC");
 while($row = $regencies_stmt->fetch(PDO::FETCH_ASSOC)) {
     $regencies_data_js[$row['province_name']][] = $row['regency_name'];
 }
 
-// Ambil daftar agen dari database
+// Ambil daftar agen
 $stmt_agents = $pdo->query("SELECT id, name FROM agents ORDER BY name ASC");
 $agents = $stmt_agents->fetchAll(PDO::FETCH_ASSOC);
 
+// Format harga ke Rupiah untuk input
+$formatted_price = number_format($property['price'], 2, ',', '.');
 ?>
 
 <div class="admin-container">
@@ -233,7 +235,6 @@ $agents = $stmt_agents->fetchAll(PDO::FETCH_ASSOC);
         <select name="regency" id="regencySelect" required <?php echo empty($property['province']) ? 'disabled' : ''; ?>>
             <option value="">Pilih Kota/Kabupaten</option>
             <?php 
-            // Populate regencies for selected province on load
             if (!empty($property['province']) && isset($regencies_data_js[$property['province']])) {
                 foreach ($regencies_data_js[$property['province']] as $regency): ?>
                     <option value="<?php echo htmlspecialchars($regency); ?>" <?php echo ($property['regency'] == $regency) ? 'selected' : ''; ?>><?php echo htmlspecialchars($regency); ?></option>
@@ -246,8 +247,9 @@ $agents = $stmt_agents->fetchAll(PDO::FETCH_ASSOC);
         <input type="text" name="district_or_area" placeholder="Kecamatan/Area (misal: Kemang, Menteng)" value="<?php echo htmlspecialchars($property['district_or_area']); ?>">
         <small>Isi dengan kecamatan atau area yang lebih spesifik jika diperlukan.</small>
 
-        <label for="price">Harga:</label>
-        <input type="number" name="price" value="<?php echo htmlspecialchars($property['price']); ?>" step="0.01" required>
+        <label for="price">Harga (Rp):</label>
+        <input type="text" name="price" value="<?php echo htmlspecialchars($formatted_price); ?>" placeholder="Contoh: 100.000.000,00" required>
+        <small>Masukkan harga dalam format Rupiah (misal: 100.000.000,00). Maksimum Rp 99.999.999,99.</small>
 
         <label for="description">Deskripsi Properti:</label>
         <textarea name="description" required><?php echo htmlspecialchars($property['description']); ?></textarea>
@@ -263,6 +265,7 @@ $agents = $stmt_agents->fetchAll(PDO::FETCH_ASSOC);
             <?php endforeach; ?>
         </select>
         <small>Pilih agen yang akan bertanggung jawab atas properti ini.</small>
+
         <h3>Detail Spesifikasi</h3>
         <label for="luas_tanah">Luas Tanah (Contoh: 6600 m2):</label>
         <input type="text" name="luas_tanah" value="<?php echo htmlspecialchars($property['luas_tanah']); ?>" placeholder="Luas Tanah">
@@ -339,8 +342,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const regenciesData = <?php echo json_encode($regencies_data_js); ?>;
 
     function populateRegencies(selectedProvinceName, currentRegencyName = '') {
-        regencySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>'; // Reset kota/kabupaten
-        regencySelect.disabled = true; // Nonaktifkan sampai ada provinsi terpilih
+        regencySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
+        regencySelect.disabled = true;
 
         if (selectedProvinceName && regenciesData[selectedProvinceName]) {
             regenciesData[selectedProvinceName].forEach(regency => {
@@ -352,21 +355,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 regencySelect.appendChild(option);
             });
-            regencySelect.disabled = false; // Aktifkan dropdown kota/kabupaten
+            regencySelect.disabled = false;
         }
     }
 
-    // Event listener untuk perubahan provinsi
     provinceSelect.addEventListener('change', function() {
         populateRegencies(this.value);
     });
 
-    // Panggil saat halaman dimuat untuk mengisi kota/kabupaten yang sudah tersimpan
     const initialProvince = provinceSelect.value;
-    const initialRegency = "<?php echo htmlspecialchars($property['regency'] ?? ''); ?>"; // Ambil nilai kota/kabupaten saat ini
+    const initialRegency = "<?php echo htmlspecialchars($property['regency'] ?? ''); ?>";
     if (initialProvince) {
         populateRegencies(initialProvince, initialRegency);
     }
+
+    // Format input harga saat pengguna mengetik
+    const priceInput = document.querySelector('input[name="price"]');
+    priceInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/[^0-9,]/g, ''); // Hanya izinkan angka dan koma
+        if (value.includes(',')) {
+            let parts = value.split(',');
+            if (parts[1] && parts[1].length > 2) {
+                parts[1] = parts[1].slice(0, 2); // Batasi 2 desimal
+            }
+            value = parts.join(',');
+        }
+        e.target.value = value;
+    });
 });
 </script>
 

@@ -1,4 +1,6 @@
 <?php
+header("Cache-Control: no-cache, must-revalidate");
+header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 include 'includes/db_connect.php';
 include 'includes/header.php';
 
@@ -9,6 +11,7 @@ try {
     $hero_images_data = $stmt_hero->fetchAll(PDO::FETCH_COLUMN);
 } catch (PDOException $e) {
     $hero_images_data = [];
+    error_log("Error fetching hero images: " . $e->getMessage());
 }
 
 // Jika tidak ada gambar hero aktif, gunakan gambar default
@@ -29,17 +32,19 @@ try {
     $provinces_search = $provinces_stmt_search->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $provinces_search = [];
+    error_log("Error fetching provinces: " . $e->getMessage());
 }
 
 // Ambil daftar kota/kabupaten dari database untuk di-cache di JS
 $regencies_data_js_search = [];
 try {
     $regencies_stmt_search = $pdo->query("SELECT p.name AS province_name, r.name AS regency_name FROM regencies r JOIN provinces p ON r.province_id = p.id ORDER BY p.name, r.name ASC");
-    while($row = $regencies_stmt_search->fetch(PDO::FETCH_ASSOC)) {
+    while ($row = $regencies_stmt_search->fetch(PDO::FETCH_ASSOC)) {
         $regencies_data_js_search[$row['province_name']][] = $row['regency_name'];
     }
 } catch (PDOException $e) {
     $regencies_data_js_search = [];
+    error_log("Error fetching regencies: " . $e->getMessage());
 }
 
 // Ambil properti terbaru
@@ -71,9 +76,10 @@ try {
             p.created_at DESC 
         LIMIT 6
     ");
-    $latest_properties = $stmt_latest->fetchAll();
+    $latest_properties = $stmt_latest->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $latest_properties = [];
+    error_log("Error fetching latest properties: " . $e->getMessage());
 }
 
 // Ambil properti dijual
@@ -108,9 +114,10 @@ try {
         LIMIT 3
     ");
     $stmt_sale->execute(['for_sale']);
-    $sale_properties = $stmt_sale->fetchAll();
+    $sale_properties = $stmt_sale->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $sale_properties = [];
+    error_log("Error fetching sale properties: " . $e->getMessage());
 }
 
 // Ambil properti disewakan
@@ -145,9 +152,10 @@ try {
         LIMIT 3
     ");
     $stmt_rent->execute(['for_rent']);
-    $rent_properties = $stmt_rent->fetchAll();
+    $rent_properties = $stmt_rent->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $rent_properties = [];
+    error_log("Error fetching rent properties: " . $e->getMessage());
 }
 ?>
 
@@ -180,8 +188,8 @@ try {
                 </select>
                 <input type="text" name="district_or_area" id="district_or_area_search" placeholder="Kecamatan/Area (misal: Kemang)">
                 <div class="price-range">
-                    <input type="number" name="harga_min" id="harga_min" placeholder="Rp. Harga Min">
-                    <input type="number" name="harga_max" id="harga_max" placeholder="Rp. Harga Maks">
+                    <input type="text" name="harga_min" id="harga_min" placeholder="Rp. Harga Min (misal: 100.000.000,00)">
+                    <input type="text" name="harga_max" id="harga_max" placeholder="Rp. Harga Maks (misal: 999.999.999,99)">
                 </div>
                 <button type="submit">CARI</button>
             </form>
@@ -206,7 +214,7 @@ try {
                                 <div class="property-image-container">
                                     <img src='Uploads/<?php echo htmlspecialchars($property['main_image_path'] ?? 'default.jpg'); ?>' alt='<?php echo htmlspecialchars($property['title']); ?>'>
                                     <div class="price-overlay">
-                                        <p>Rp <?php echo number_format($property['price'], 0, ',', '.'); ?></p>
+                                        <p>Rp <?php echo number_format($property['price'], 2, ',', '.'); ?></p>
                                     </div>
                                 </div>
                                 <div class="property-card-content">
@@ -253,7 +261,7 @@ try {
                             <div class="property-image-container">
                                 <img src='Uploads/<?php echo htmlspecialchars($property['main_image_path'] ?? 'default.jpg'); ?>' alt='<?php echo htmlspecialchars($property['title']); ?>'>
                                 <div class="price-overlay">
-                                    <p>Rp <?php echo number_format($property['price'], 0, ',', '.'); ?></p>
+                                    <p>Rp <?php echo number_format($property['price'], 2, ',', '.'); ?></p>
                                 </div>
                             </div>
                             <div class="property-card-content">
@@ -301,7 +309,7 @@ try {
                             <div class="property-image-container">
                                 <img src='Uploads/<?php echo htmlspecialchars($property['main_image_path'] ?? 'default.jpg'); ?>' alt='<?php echo htmlspecialchars($property['title']); ?>'>
                                 <div class="price-overlay">
-                                    <p>Rp <?php echo number_format($property['price'], 0, ',', '.'); ?></p>
+                                    <p>Rp <?php echo number_format($property['price'], 2, ',', '.'); ?></p>
                                 </div>
                             </div>
                             <div class="property-card-content">
@@ -340,7 +348,7 @@ try {
 document.addEventListener('DOMContentLoaded', function() {
     // Animasi Hero Section
     const heroSection = document.getElementById('heroSection');
-    const heroImages = <?php echo json_encode(array_map(function($path) { return 'Uploads/hero/' . $path; }, $hero_images_data)); ?>;
+    const heroImages = <?php echo json_encode(array_map(function($path) { return 'Uploads/hero/' . $path; }, $hero_images_data)); ?> || [];
 
     function setHeroImage(index) {
         if (heroImages.length > 0 && heroImages[index]) {
@@ -364,14 +372,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Dropdown Lokasi Pencarian
     const provinceSearchSelect = document.getElementById('province_search');
     const regencySearchSelect = document.getElementById('regency_search');
-    const regenciesSearchData = <?php echo json_encode($regencies_data_js_search); ?>;
+    const regenciesSearchData = <?php echo json_encode($regencies_data_js_search); ?> || {};
 
     provinceSearchSelect.addEventListener('change', function() {
         const selectedProvince = this.value;
         regencySearchSelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
         regencySearchSelect.disabled = true;
 
-        if (selectedProvince && regenciesSearchData[selectedProvince]) {
+        if (selectedProvince && regenciesSearchData[selectedProvince] && Array.isArray(regenciesSearchData[selectedProvince])) {
             regenciesSearchData[selectedProvince].forEach(regency => {
                 const option = document.createElement('option');
                 option.value = regency;
@@ -389,6 +397,24 @@ document.addEventListener('DOMContentLoaded', function() {
             container.scrollBy({ left: distance, behavior: 'smooth' });
         }
     };
+
+    // Format input harga di form pencarian
+    const priceInputs = [document.getElementById('harga_min'), document.getElementById('harga_max')];
+    priceInputs.forEach(input => {
+        if (input) {
+            input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^0-9,]/g, '');
+                if (value.includes(',')) {
+                    let parts = value.split(',');
+                    if (parts[1] && parts[1].length > 2) {
+                        parts[1] = parts[1].slice(0, 2);
+                    }
+                    value = parts.join(',');
+                }
+                e.target.value = value;
+            });
+        }
+    });
 });
 </script>
 

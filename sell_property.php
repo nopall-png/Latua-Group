@@ -2,11 +2,13 @@
 // Tentukan email admin yang akan menerima pesan
 $to_email = "latuealand@gmail.com"; // Ganti dengan alamat email admin Anda
 
-// Sertakan koneksi database (hanya untuk proses backend jika diperlukan)
+// Sertakan koneksi database
 include 'includes/db_connect.php';
 
-// Proses data jika ada permintaan AJAX
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajax_submit'])) {
+// --- Perbaikan Utama di sini: Logika pemrosesan formulir ---
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $response = ['status' => 'error', 'message' => 'Terjadi kesalahan tidak terduga.'];
+
     $nama_lengkap = trim($_POST['nama_lengkap'] ?? '');
     $alamat_email = trim($_POST['alamat_email'] ?? '');
     $nomor_handphone = trim($_POST['nomor_handphone'] ?? '');
@@ -17,13 +19,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajax_submit'])) {
 
     // Validasi dasar
     if (empty($nama_lengkap) || empty($alamat_email) || empty($nomor_handphone) || empty($perihal) || empty($status_properti)) {
-        echo json_encode(['status' => 'error', 'message' => 'Semua kolom yang ditandai * wajib diisi.']);
-        exit();
+        $response['message'] = 'Semua kolom yang ditandai * wajib diisi.';
     } elseif (!filter_var($alamat_email, FILTER_VALIDATE_EMAIL)) {
-        echo json_encode(['status' => 'error', 'message' => 'Format alamat email tidak valid.']);
-        exit();
+        $response['message'] = 'Format alamat email tidak valid.';
     } else {
         try {
+            // Persiapkan dan jalankan statement PDO untuk menyimpan data
             $stmt = $pdo->prepare("INSERT INTO pending_properties (user_name, user_email, user_phone, perihal, status_properti, detail_properti, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
             $stmt->execute([$nama_lengkap, $alamat_email, $nomor_handphone, $perihal, $status_properti, $detail_properti]);
 
@@ -42,16 +43,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajax_submit'])) {
             $email_headers .= "Reply-To: " . $alamat_email . "\r\n";
             $email_headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
 
-            // Kirim email (opsional, hanya untuk notifikasi)
-            mail($to_email, $subject, $email_content, $email_headers);
-
-            echo json_encode(['status' => 'success', 'message' => 'Pesan berhasil dikirim. Terimakasih']);
-            exit();
+            // Kirim email
+            if (mail($to_email, $subject, $email_content, $email_headers)) {
+                $response = ['status' => 'success', 'message' => 'Formulir Anda telah berhasil dikirim! Tim kami akan segera menghubungi Anda.'];
+            } else {
+                $response = ['status' => 'success', 'message' => 'Formulir Anda telah berhasil dikirim ke database! Namun, email notifikasi gagal terkirim. Tim kami tetap akan memprosesnya.'];
+            }
         } catch (PDOException $e) {
-            echo json_encode(['status' => 'error', 'message' => 'Error menyimpan pengajuan: ' . $e->getMessage()]);
-            exit();
+            $response['message'] = 'Error menyimpan pengajuan ke database: ' . $e->getMessage();
+            error_log("Database Error: " . $e->getMessage()); // Log error untuk debugging
         }
     }
+
+    // Kirim respons JSON
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit();
 }
 
 // Sertakan header
@@ -61,44 +68,64 @@ include 'includes/header.php';
 <style>
     /* General Styling */
     body {
-        background-color: #D3D3D3;
-        font-family: Arial, sans-serif;
+        background-color: #F5F6FA;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         color: #333;
         margin: 0;
         padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
     }
     .container {
-        background-color: white;
-        max-width: 700px;
-        margin: 50px auto;
+        background-color: #FFFFFF;
+        max-width: 750px;
+        width: 100%;
+        margin: 20px auto;
         padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     h2 {
         color: #5C2D91;
         text-transform: uppercase;
-        font-size: 24px;
+        font-size: 28px;
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
+        font-weight: 600;
     }
     .form-group {
         margin-bottom: 20px;
+        position: relative;
     }
     label {
-        font-weight: bold;
+        font-weight: 500;
         font-size: 16px;
+        color: #444;
+        display: block;
+        margin-bottom: 8px;
     }
     label span {
-        color: red;
+        color: #DC3545;
     }
     input, select, textarea {
         width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+        padding: 12px;
+        border: 2px solid #E9ECEF;
+        border-radius: 8px;
         font-size: 16px;
-        margin-top: 5px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: #5C2D91;
+        box-shadow: 0 0 5px rgba(92, 45, 145, 0.3);
+        outline: none;
     }
     .form-group-inline {
         display: flex;
@@ -109,52 +136,92 @@ include 'includes/header.php';
     }
     .radio-group {
         display: flex;
-        gap: 20px;
-        margin-top: 10px;
+        gap: 15px;
+        margin-top: 5px;
+        flex-wrap: wrap;
+        align-items: center;
     }
     .radio-group input[type="radio"] {
+        margin: 0 5px 0 0;
         accent-color: #5C2D91;
     }
     .radio-group label {
         font-weight: normal;
-        font-size: 14px;
-        color: #333;
+        font-size: 15px;
+        color: #555;
+        margin: 0;
+        display: flex;
+        align-items: center;
     }
     .btn-primary {
         display: inline-block;
         background-color: #FFC107;
-        color: black;
-        padding: 10px 20px;
+        color: #333;
+        padding: 12px 25px;
         text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
+        border-radius: 8px;
+        font-weight: 600;
         text-align: center;
-        margin-top: 10px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
     }
     .btn-primary:hover {
-        background-color: #e0a800;
+        background-color: #E0A800;
+        transform: translateY(-2px);
     }
     button[type="submit"] {
-        background-color: #FFC107;
-        color: black;
-        padding: 10px 20px;
+        background-color: #5C2D91;
+        color: #FFF;
+        padding: 12px 25px;
         border: none;
-        border-radius: 5px;
-        font-weight: bold;
+        border-radius: 8px;
+        font-weight: 600;
         cursor: pointer;
         width: 100%;
         margin-top: 20px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
     }
     button[type="submit"]:hover {
-        background-color: #e0a800;
+        background-color: #4A2377;
+        transform: translateY(-2px);
     }
-    .error-message {
-        color: white;
-        background-color: #DC3545;
-        padding: 10px;
-        border-radius: 5px;
-        text-align: center;
+    #message {
         margin-bottom: 20px;
+        text-align: center;
+    }
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 16px;
+        animation: slideIn 0.5s ease-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .alert-success {
+        color: #155724;
+        background-color: #D4EDDA;
+        border: 1px solid #C3E6CB;
+    }
+    .alert-success::before {
+        content: "✔"; /* Tanda centang */
+        font-size: 18px;
+        color: #155724;
+    }
+    .alert-danger {
+        color: #721C24;
+        background-color: #F8D7DA;
+        border: 1px solid #F5C6CB;
+    }
+    .alert-danger::before {
+        content: "✘"; /* Tanda silang */
+        font-size: 18px;
+        color: #721C24;
     }
     /* WhatsApp Chat Button */
     .whatsapp-chat {
@@ -163,32 +230,47 @@ include 'includes/header.php';
         right: 20px;
         background-color: #25D366;
         color: white;
-        padding: 10px 15px;
+        padding: 12px 20px;
         border-radius: 50px;
         display: flex;
         align-items: center;
         gap: 10px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
         text-decoration: none;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     .whatsapp-chat i {
         font-size: 24px;
+    }
+    .whatsapp-chat:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
     }
     /* Footer Styling */
     footer {
         background-color: #5C2D91;
         color: white;
         text-align: center;
-        padding: 20px 0;
+        padding: 15px 0;
         width: 100%;
         margin-top: 50px;
         position: relative;
         clear: both;
+        font-size: 14px;
     }
     /* Responsive Design */
     @media (max-width: 768px) {
+        .container {
+            margin: 10px;
+            padding: 20px;
+        }
         .form-group-inline {
             flex-direction: column;
+        }
+        .whatsapp-chat {
+            bottom: 10px;
+            right: 10px;
+            padding: 10px 15px;
         }
     }
 </style>
@@ -200,17 +282,17 @@ include 'includes/header.php';
     <form id="contact-form" class="contact-form">
         <div class="form-group">
             <label for="nama_lengkap">Nama Lengkap <span>*</span></label>
-            <input type="text" id="nama_lengkap" name="nama_lengkap" required>
+            <input type="text" id="nama_lengkap" name="nama_lengkap" required placeholder="Masukkan nama lengkap Anda">
         </div>
 
         <div class="form-group-inline">
             <div class="form-group">
                 <label for="alamat_email">Alamat Email <span>*</span></label>
-                <input type="email" id="alamat_email" name="alamat_email" required>
+                <input type="email" id="alamat_email" name="alamat_email" required placeholder="contoh@email.com">
             </div>
             <div class="form-group">
                 <label for="nomor_handphone">Nomor Handphone / Telepon <span>*</span></label>
-                <input type="tel" id="nomor_handphone" name="nomor_handphone" required>
+                <input type="tel" id="nomor_handphone" name="nomor_handphone" required placeholder="081234567890">
             </div>
         </div>
 
@@ -229,6 +311,7 @@ include 'includes/header.php';
         <div class="form-group">
             <label for="perihal">Perihal / Keperluan <span>*</span></label>
             <select id="perihal" name="perihal" required>
+                <option value="">Pilih Perihal</option>
                 <option value="Mendaftarkan Properti">Mendaftarkan Properti</option>
                 <option value="Pertanyaan Umum">Pertanyaan Umum</option>
                 <option value="Kritik & Saran">Kritik & Saran</option>
@@ -238,7 +321,7 @@ include 'includes/header.php';
         <div class="form-group">
             <label for="status_properti">Status Properti <span>*</span></label>
             <select id="status_properti" name="status_properti" required>
-                <option value="">Please select</option>
+                <option value="">Pilih Status</option>
                 <option value="Dijual">Dijual</option>
                 <option value="Disewakan">Disewakan</option>
             </select>
@@ -246,7 +329,7 @@ include 'includes/header.php';
 
         <div class="form-group">
             <label for="detail_properti">Tulis detail informasi properti yang ingin Anda daftarkan</label>
-            <textarea id="detail_properti" name="detail_properti" rows="5"></textarea>
+            <textarea id="detail_properti" name="detail_properti" rows="5" placeholder="Masukkan detail properti (lokasi, ukuran, harga, dll.)"></textarea>
         </div>
         
         <p>Atau isi detail informasi dari properti yang ingin Anda daftarkan melalui tautan di bawah ini:</p>
@@ -256,35 +339,54 @@ include 'includes/header.php';
     </form>
 </div>
 
-<!-- WhatsApp Chat Button -->
 <a href="https://wa.me/62123456789" class="whatsapp-chat">
     <i class="fab fa-whatsapp"></i> Butuh bantuan? Chat dengan kami
 </a>
 
 <script>
-document.getElementById('contact-form').addEventListener('submit', function(e) {
-    e.preventDefault(); // Mencegah reload halaman
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+        e.preventDefault(); // Mencegah reload halaman
 
-    const formData = new FormData(this);
-    formData.append('ajax_submit', true);
+        const formData = new FormData(this);
 
-    fetch(window.location.href, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            alert(data.message); // Pop-up pesan sukses
-            this.reset(); // Reset form setelah sukses
-        } else {
-            alert(data.message); // Pop-up pesan error
-        }
-    })
-    .catch(error => {
-        alert('Terjadi kesalahan: ' + error.message);
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text || 'Terjadi kesalahan pada server.');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data); // Debug: Cek data yang diterima
+            const messageBox = document.getElementById('message');
+            messageBox.innerHTML = ''; // Bersihkan pesan sebelumnya
+            if (data.status === 'success') {
+                messageBox.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                this.reset(); // Reset form setelah sukses
+                // Tambahkan konfirmasi visual dengan delay sebelum menghilang
+                setTimeout(() => {
+                    messageBox.innerHTML = '<div class="alert alert-success">Pengajuan Anda telah diproses. Terima kasih!</div>';
+                    setTimeout(() => {
+                        messageBox.innerHTML = ''; // Hilangkan pesan setelah beberapa detik
+                    }, 5000); // Hilang setelah 5 detik
+                }, 3000); // Tunggu 3 detik sebelum ubah pesan
+            } else {
+                messageBox.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+            }
+            messageBox.scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(error => {
+            console.error('Error:', error); // Log error untuk debugging
+            const messageBox = document.getElementById('message');
+            messageBox.innerHTML = `<div class="alert alert-danger">Terjadi kesalahan saat mengirim data. Silakan coba lagi atau hubungi dukungan.</div>`;
+            messageBox.scrollIntoView({ behavior: 'smooth' });
+        });
     });
-});
 </script>
 
 <?php

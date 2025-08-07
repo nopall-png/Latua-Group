@@ -270,6 +270,114 @@ if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id']))
 }
 ?>
 
+<style>
+    /* General Styling */
+    .admin-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .admin-section {
+        margin-bottom: 40px;
+    }
+    h2 {
+        color: #333;
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+    .upload-hero-form {
+        margin-bottom: 20px;
+    }
+    .upload-hero-form label, .upload-hero-form input, .upload-hero-form button {
+        display: block;
+        margin-bottom: 10px;
+    }
+    .btn-upload, .btn-set-active, .btn-delete {
+        padding: 5px 10px;
+        margin-right: 5px;
+        text-decoration: none;
+        color: #fff;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    .btn-upload {
+        background-color: #28a745;
+    }
+    .btn-set-active {
+        background-color: #007bff;
+    }
+    .btn-delete {
+        background-color: #dc3545;
+    }
+    .btn-upload:hover, .btn-set-active:hover, .btn-delete:hover {
+        opacity: 0.9;
+    }
+    .success-message {
+        color: #28a745;
+        background-color: #e9fce9;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    .error-message {
+        color: #dc3545;
+        background-color: #fce9e9;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    .active-badge {
+        background-color: #28a745;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 3px;
+        margin-right: 5px;
+    }
+
+    /* Hero Images Styling - Updated to Integrate with Images */
+    .hero-image-grid {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 15px;
+        margin-top: 15px;
+        padding-bottom: 10px;
+    }
+    .hero-image-item {
+        flex: 0 0 300px; /* Fixed width for consistency */
+        height: auto;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        position: relative;
+        transition: transform 0.2s;
+    }
+    .hero-image-item img {
+        width: 100%;
+        height: 200px; /* Fixed height for uniformity */
+        object-fit: cover; /* Ensures image fills the space without distortion */
+        display: block;
+    }
+    .hero-image-actions {
+        padding: 10px;
+        background-color: #f8f9fa;
+        text-align: center;
+    }
+    .hero-image-actions a {
+        display: inline-block;
+        margin: 0 5px;
+    }
+
+    /* Ensure images integrate with actions */
+    .hero-image-item:hover {
+        transform: scale(1.02); /* Slight zoom on hover for interactivity */
+    }
+</style>
+
 <div class="admin-container">
     <h2>Admin Dashboard</h2>
     <p>Welcome, Admin! Manage your properties and site settings below.</p>

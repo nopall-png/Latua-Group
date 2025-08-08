@@ -120,7 +120,7 @@ session_start();
     <div class="header">
         <div class="logo">
             <a href="/LatuaGroup/index.php">
-                <img src="/Latua-Group/latuea-logo.jpg" alt="Asia One Property Logo">
+                <img src="/LatuaGroup/latuea-logo.jpg" alt="Latuea Gorup Logo">
             </a>
         </div>
         <div class="contact-info">
@@ -132,10 +132,10 @@ session_start();
             <a href="#"><i class="fab fa-youtube"></i></a>
         </div>
         <div class="nav-buttons">
-            <a href="/Latua-Group/index.php" class="nav-button">Home</a>
-            <a href="/Latua-Group/about.php" class="nav-button">Tentang Kami</a>
-            <a href="/Latua-Group/office.php" class="nav-button">Kantor Kami</a>
-            <a href="/Latua-Group/contact.php" class="nav-button">Hubungi Kami</a>
+            <a href="/LatuaGroup/index.php" class="nav-button">Home</a>
+            <a href="/Latu-Group/about.php" class="nav-button">Tentang Kami</a>
+            <a href="/LatuaGroup/office.php" class="nav-button">Kantor Kami</a>
+            <a href="/LatuaGroup/contact.php" class="nav-button">Hubungi Kami</a>
         </div>
     </div>
     <div class="container">

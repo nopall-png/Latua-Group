@@ -153,7 +153,7 @@
 <div class="hero-image-office">
     <div class="hero-overlay"></div>
     <div class="breadcrumb-nav">
-        <a href="/Latua-Group/index.php">Latua Land</a> / Kantor Kami
+        <a href="/LatuaGroup/index.php">Latua Land</a> / Kantor Kami
     </div>
     <div class="hero-content">
         <h1 class="hero-title">Kantor Kami</h1>
@@ -162,7 +162,7 @@
 
 <div class="office-content">
     <div class="office-card">
-        <img src="/Latua-Group/uploads/latua-icon.jpg" alt="Asia One Property Logo">
+        <img src="/LatuaGroup/uploads/latua-icon.jpg" alt="Asia One Property Logo">
         <h2>Burgundy Commercial</h2>
         <p>Ruko Blok RAL 029 The Orchard<br>Summarecon Bekasi,<br>Kec. Bekasi Utara, Kota Bekasi,<br>Jawa Barat 17143</p>
         <p>Email: <a href="mailto:bekasi.asiaone@gmail.com" class="contact-link">bekasi.asiaone@gmail.com</a></p>

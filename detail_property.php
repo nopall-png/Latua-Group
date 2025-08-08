@@ -43,83 +43,94 @@ try {
 }
 ?>
 
-<div class="full-width-container">
-    <div class="property-detail-container">
-        <div class="property-detail-card">
-            <div class="detail-header">
-                <h1 class="property-title"><?php echo htmlspecialchars($property['title']); ?></h1>
-                <p class="property-location"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($property['district_or_area'] ?? '') . ', ' . htmlspecialchars($property['regency'] ?? ''); ?></p>
-                <p class="price">Rp <?php echo number_format($property['price'] ?? 0, 0, ',', '.'); ?></p>
-            </div>
+<div class="property-detail-container">
+    <div class="property-detail-card">
+        <div class="detail-header">
+            <h1 class="property-title"><?php echo htmlspecialchars($property['title'] ?? 'Disewakan Kios Cuan di Apartemen SpringLake, Summarecon Bekasi'); ?></h1>
+            <p class="property-location"><?php echo htmlspecialchars($property['district_or_area'] ?? 'bekasi'); ?></p>
+            <p class="price">Rp <?php echo number_format($property['price'] ?? 40000000, 0, ',', '.'); ?></p>
+        </div>
 
-            <div class="image-gallery">
+        <div class="image-gallery">
+            <?php if (!empty($images)): ?>
                 <div class="main-image-container">
                     <button class="gallery-nav-btn prev-btn">&lt;</button>
-                    <img src="Uploads/<?php echo htmlspecialchars($images[0] ?? 'default.jpg'); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>" class="main-image">
+                    <img src="Uploads/<?php echo htmlspecialchars($images[0]); ?>" alt="<?php echo htmlspecialchars($property['title'] ?? 'Disewakan Kios Cuan di Apartemen SpringLake, Summarecon Bekasi'); ?>" class="main-image">
                     <button class="gallery-nav-btn next-btn">&gt;</button>
                 </div>
                 <div class="thumbnail-gallery">
-                    <?php if (!empty($images)): ?>
-                        <?php foreach ($images as $key => $image_path): ?>
-                            <img src="Uploads/<?php echo htmlspecialchars($image_path); ?>" alt="Thumbnail <?php echo $key + 1; ?>" class="thumbnail-item <?php echo ($key == 0) ? 'active' : ''; ?>" data-index="<?php echo $key; ?>">
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <img src="Uploads/default.jpg" alt="No Image Thumbnail" class="thumbnail-item active">
-                    <?php endif; ?>
+                    <?php foreach ($images as $key => $image_path): ?>
+                        <img src="Uploads/<?php echo htmlspecialchars($image_path); ?>" alt="Thumbnail <?php echo $key + 1; ?>" class="thumbnail-item <?php echo ($key == 0) ? 'active' : ''; ?>" data-index="<?php echo $key; ?>">
+                    <?php endforeach; ?>
                 </div>
-            </div>
-
-            <div class="specifications">
-                <h2>Spesifikasi Properti</h2>
-                <table>
-                    <tr><th>ID Properti:</th><td><?php echo htmlspecialchars($property['id_properti'] ?? 'N/A'); ?></td></tr>
-                    <tr><th>Tipe Properti:</th><td><?php echo htmlspecialchars($property['tipe_properti'] ?? 'N/A'); ?></td></tr>
-                    <tr><th>Luas Tanah:</th><td><?php echo htmlspecialchars($property['luas_tanah'] ?? 'N/A'); ?> m²</td></tr>
-                    <tr><th>Luas Bangunan:</th><td><?php echo htmlspecialchars($property['luas_bangunan'] ?? 'N/A'); ?> m²</td></tr>
-                    <tr><th>Arah Bangunan:</th><td><?php echo htmlspecialchars($property['arah_bangunan'] ?? 'N/A'); ?></td></tr>
-                    <tr><th>Jenis Bangunan:</th><td><?php echo htmlspecialchars($property['jenis_bangunan'] ?? 'N/A'); ?></td></tr>
-                    <tr><th>Lebar Jalan:</th><td>N/A</td></tr>
-                    <tr><th>Kamar Tidur:</th><td><?php echo htmlspecialchars($property['kamar_tidur'] ?? 'N/A'); ?></td></tr>
-                    <tr><th>Kamar Mandi:</th><td><?php echo htmlspecialchars($property['kamar_mandi'] ?? 'N/A'); ?></td></tr>
-                    <tr><th>* Security 24 Jam</th><td></td></tr>
-                </table>
-            </div>
-
-            <div class="about-property">
-                <h2>Tentang Properti Ini</h2>
-                <p><?php echo nl2br(htmlspecialchars($property['description'] ?? 'Tidak ada deskripsi.')); ?></p>
-                <p class="view-count">Dilihat sebanyak: <?php echo htmlspecialchars($property['view_count'] ?? '0'); ?> Kali</p>
-                <div class="property-actions">
-                    <button class="view-button share-btn">Share Properti Ini</button>
-                    <button class="view-button delete-btn">Hapus abct xyz</button>
-                </div>
-            </div>
-
-            <?php if ($agent): ?>
-                <div class="agent-contact-detail-card">
-                    <h2>Kontak Agen</h2>
-                    <div class="agent-info-detail">
-                        <div class="agent-photo-container-detail">
-                            <?php if ($agent['photo_path'] && file_exists('Uploads/agents/' . $agent['photo_path'])): ?>
-                                <img src="Uploads/agents/<?php echo htmlspecialchars($agent['photo_path']); ?>" alt="Foto Agen">
-                            <?php else: ?>
-                                <i class="fas fa-user-circle no-photo-icon-detail"></i>
-                            <?php endif; ?>
-                        </div>
-                        <div class="agent-details-text">
-                            <h3 class="agent-name-detail"><?php echo htmlspecialchars($agent['name']); ?></h3>
-                            <p><i class="fas fa-phone"></i> <?php echo htmlspecialchars($agent['phone_number']); ?></p>
-                            <?php if (!empty($agent['email'])): ?>
-                                <p><i class="fas fa-envelope"></i> <a href="mailto:<?php echo htmlspecialchars($agent['email']); ?>"><?php echo htmlspecialchars($agent['email']); ?></a></p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <a href="https://wa.me/<?php echo htmlspecialchars(preg_replace('/[^0-9]/', '', $agent['phone_number'])); ?>" target="_blank" class="view-button btn-whatsapp-detail">
-                        <i class="fab fa-whatsapp"></i> Chat WhatsApp
-                    </a>
+            <?php else: ?>
+                <div class="main-image-container">
+                    <img src="Uploads/default.jpg" alt="No Image" class="main-image">
                 </div>
             <?php endif; ?>
         </div>
+
+        <div class="specifications">
+            <h2>Spesifikasi Properti</h2>
+            <table>
+                <tr><th>ID Properti:</th><td><?php echo htmlspecialchars($property['id_properti'] ?? '119475'); ?></td></tr>
+                <tr><th>Tipe Properti:</th><td><?php echo htmlspecialchars($property['tipe_properti'] ?? 'Apartemen'); ?></td></tr>
+                <tr><th>Luas Tanah:</th><td><?php echo htmlspecialchars($property['luas_tanah'] ?? 'N/A'); ?> m²</td></tr>
+                <tr><th>Luas Bangunan:</th><td><?php echo htmlspecialchars($property['luas_bangunan'] ?? '16,87'); ?> m²</td></tr>
+                <tr><th>Arah Bangunan:</th><td><?php echo htmlspecialchars($property['arah_bangunan'] ?? 'N/A'); ?></td></tr>
+                <tr><th>Jenis Bangunan:</th><td><?php echo htmlspecialchars($property['jenis_bangunan'] ?? 'N/A'); ?></td></tr>
+                <tr><th>Lebar Jalan:</th><td><?php echo htmlspecialchars($property['lebar_jalan'] ?? 'N/A'); ?></td></tr>
+                <tr><th>Kamar Tidur:</th><td><?php echo htmlspecialchars($property['kamar_tidur'] ?? 'Tidak Ada'); ?></td></tr>
+                <tr><th>Kamar Mandi:</th><td><?php echo htmlspecialchars($property['kamar_mandi'] ?? 'Tidak Ada'); ?></td></tr>
+                <tr><th>Kamar Pembantu:</th><td><?php echo htmlspecialchars($property['kamar_pembantu'] ?? 'Tidak Ada'); ?></td></tr>
+                <tr><th>Sertifikat:</th><td><?php echo htmlspecialchars($property['sertifikat'] ?? 'SHM'); ?></td></tr>
+                <tr><th>Jumlah Lantai:</th><td><?php echo htmlspecialchars($property['jumlah_lantai'] ?? '1'); ?></td></tr>
+                <tr><th>Daya Listrik:</th><td><?php echo htmlspecialchars($property['daya_listrik'] ?? '1300 VA'); ?></td></tr>
+                <tr><th>Saluran Air:</th><td><?php echo htmlspecialchars($property['saluran_air'] ?? 'PDAM'); ?></td></tr>
+                <tr><th>Jalur Telepon:</th><td><?php echo htmlspecialchars($property['jalur_telepon'] ?? 'Tidak Ada'); ?></td></tr>
+                <tr><th>Jumlah Jalur Telepon:</th><td><?php echo htmlspecialchars($property['jumlah_jalur_telepon'] ?? 'N/A'); ?></td></tr>
+                <tr><th>Interior:</th><td><?php echo htmlspecialchars($property['interior'] ?? 'Kosong'); ?></td></tr>
+                <tr><th>Garasi / Parkir:</th><td><?php echo htmlspecialchars($property['garasi_parkir'] ?? 'Tidak Ada'); ?></td></tr>
+            </table>
+            <div class="facilities">
+                <h3>Fasilitas & Fitur Properti</h3>
+                <ul>
+                    <li>* Security 24 Jam</li>
+                    <li>Dekat Sekolahan</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="about-property">
+            <h2>Tentang Properti Ini</h2>
+            <p><?php echo nl2br(htmlspecialchars($property['description'] ?? 'Disewakan Kios Cuan di Apartemen SpringLake, Summarecon Bekasi, Luas kios 16,87 m² (dimensi 2,8 x 6), Listrik 1.300 w, Air PAM, #dvd, Harga 40 juta/tahun, Hub: David AOSB')); ?></p>
+            <p class="view-count">Dilihat sebanyak: <?php echo htmlspecialchars($property['view_count'] ?? '0'); ?> Kali</p>
+            <div class="property-actions">
+                <button class="view-button share-btn">Share Properti Ini</button>
+            </div>
+        </div>
+
+        <?php if ($agent): ?>
+            <div class="agent-contact-detail-card">
+                <h2>Kontak Agen</h2>
+                <div class="agent-info-detail">
+                    <div class="agent-photo-container-detail">
+                        <?php if ($agent['photo_path'] && file_exists('Uploads/agents/' . $agent['photo_path'])): ?>
+                            <img src="Uploads/agents/<?php echo htmlspecialchars($agent['photo_path']); ?>" alt="Foto Agen">
+                        <?php else: ?>
+                            <i class="fas fa-user-circle no-photo-icon-detail"></i>
+                        <?php endif; ?>
+                    </div>
+                    <div class="agent-details-text">
+                        <h3 class="agent-name-detail"><?php echo htmlspecialchars($agent['name'] ?? 'David AOSB'); ?></h3>
+                        <p><i class="fas fa-phone"></i> <?php echo htmlspecialchars($agent['phone_number'] ?? '081285724152'); ?></p>
+                    </div>
+                </div>
+                <a href="https://wa.me/<?php echo htmlspecialchars(preg_replace('/[^0-9]/', '', $agent['phone_number'] ?? '081285724152')); ?>" target="_blank" class="view-button btn-whatsapp-detail">
+                    <i class="fab fa-whatsapp"></i> Chat WhatsApp
+                </a>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -167,12 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include 'includes/footer.php'; ?>
-
 <style>
-    /* ... (Kode CSS sebelumnya tetap ada) ... */
-
-/* Detail Property Styles */
 .property-detail-container {
     max-width: 1200px;
     margin: 20px auto;
@@ -318,6 +324,25 @@ document.addEventListener('DOMContentLoaded', function() {
     color: #333;
 }
 
+.facilities {
+    margin-top: 15px;
+}
+
+.facilities h3 {
+    font-size: 1.2rem;
+    color: #334894;
+    margin-bottom: 10px;
+}
+
+.facilities ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.facilities li {
+    margin-bottom: 5px;
+}
+
 .about-property {
     padding: 20px;
     background-color: #f8f9fa;
@@ -348,40 +373,36 @@ document.addEventListener('DOMContentLoaded', function() {
     justify-content: center;
 }
 
-.share-btn, .delete-btn {
+.share-btn, .buat-penawaran-btn {
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-family: 'Montserrat', sans-serif;
-}
-
-.share-btn {
     background-color: #007bff;
     color: #fff;
 }
 
-.delete-btn {
+.buat-penawaran-btn {
     background-color: #dc3545;
-    color: #fff;
 }
 
-.share-btn:hover, .delete-btn:hover {
+.share-btn:hover, .buat-penawaran-btn:hover {
     opacity: 0.9;
 }
 
 .agent-contact-detail-card {
     padding: 20px;
-    background: #FFFFFF;
-    border: 2px solid #334894;
+    background: #fffbf0;
+    border: 2px solid #f4a261;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(51, 72, 148, 0.2);
+    box-shadow: 0 4px 15px rgba(244, 162, 97, 0.2);
     margin-top: 20px;
 }
 
 .agent-contact-detail-card h2 {
     font-size: 1.5rem;
-    color: #334894;
+    color: #f4a261;
     margin-bottom: 15px;
     text-align: center;
     font-family: 'Lato', sans-serif;
@@ -399,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
     height: 120px;
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid #334894;
+    border: 2px solid #f4a261;
 }
 
 .agent-photo-container-detail img {
@@ -410,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .no-photo-icon-detail {
     font-size: 100px;
-    color: #334894;
+    color: #f4a261;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -424,7 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .agent-name-detail {
     font-size: 1.3rem;
-    color: #334894;
+    color: #f4a261;
     margin-bottom: 10px;
     font-family: 'Lato', sans-serif;
 }
@@ -462,7 +483,6 @@ document.addEventListener('DOMContentLoaded', function() {
     margin-right: 5px;
 }
 
-/* Responsivitas yang Ditingkatkan */
 @media (max-width: 768px) {
     .main-image-container {
         height: 250px;
@@ -505,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
         flex-direction: column;
     }
 
-    .share-btn, .delete-btn {
+    .share-btn, .buat-penawaran-btn {
         width: 100%;
         margin-bottom: 10px;
     }
@@ -533,3 +553,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 </style>
+
+<?php include 'includes/footer.php'; ?>

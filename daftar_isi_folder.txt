@@ -1,0 +1,244 @@
+ Volume in drive C has no label.
+ Volume Serial Number is F266-B50E
+
+ Directory of C:\xampp\htdocs\Latua-Group
+
+08/08/2025  06:55 AM    <DIR>          .
+08/08/2025  06:51 AM    <DIR>          ..
+08/08/2025  06:39 AM    <DIR>          admin
+08/08/2025  06:39 AM    <DIR>          auth
+08/08/2025  06:39 AM    <DIR>          css
+08/08/2025  06:55 AM                 0 daftar_isi_folder.txt
+08/08/2025  06:39 AM             7,892 detail_property.php
+08/08/2025  06:39 AM    <DIR>          includes
+08/08/2025  06:47 AM            19,474 index.php
+08/08/2025  06:39 AM             3,938 search_results.php
+08/08/2025  06:39 AM            14,531 sell_property.php
+08/08/2025  06:39 AM    <DIR>          uploads
+08/08/2025  06:39 AM    <DIR>          user
+               5 File(s)         45,835 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git
+
+08/08/2025  06:55 AM    <DIR>          ..
+08/08/2025  06:40 AM               333 config
+08/08/2025  06:39 AM                73 description
+08/08/2025  06:39 AM                21 HEAD
+08/08/2025  06:39 AM    <DIR>          hooks
+08/08/2025  06:39 AM             4,364 index
+08/08/2025  06:39 AM    <DIR>          info
+08/08/2025  06:39 AM    <DIR>          logs
+08/08/2025  06:39 AM    <DIR>          objects
+08/08/2025  06:39 AM               112 packed-refs
+08/08/2025  06:39 AM    <DIR>          refs
+               5 File(s)          4,903 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\hooks
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM               478 applypatch-msg.sample
+08/08/2025  06:39 AM               896 commit-msg.sample
+08/08/2025  06:39 AM             4,726 fsmonitor-watchman.sample
+08/08/2025  06:39 AM               189 post-update.sample
+08/08/2025  06:39 AM               424 pre-applypatch.sample
+08/08/2025  06:39 AM             1,649 pre-commit.sample
+08/08/2025  06:39 AM               416 pre-merge-commit.sample
+08/08/2025  06:39 AM             1,374 pre-push.sample
+08/08/2025  06:39 AM             4,898 pre-rebase.sample
+08/08/2025  06:39 AM               544 pre-receive.sample
+08/08/2025  06:39 AM             1,492 prepare-commit-msg.sample
+08/08/2025  06:39 AM             2,783 push-to-checkout.sample
+08/08/2025  06:39 AM             2,308 sendemail-validate.sample
+08/08/2025  06:39 AM             3,650 update.sample
+              14 File(s)         25,827 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\info
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM               240 exclude
+               1 File(s)            240 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\logs
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM               191 HEAD
+08/08/2025  06:39 AM    <DIR>          refs
+               1 File(s)            191 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\logs\refs
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+08/08/2025  06:39 AM    <DIR>          heads
+08/08/2025  06:39 AM    <DIR>          remotes
+               0 File(s)              0 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\logs\refs\heads
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+08/08/2025  06:39 AM               191 main
+               1 File(s)            191 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\logs\refs\remotes
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+08/08/2025  06:39 AM    <DIR>          origin
+               0 File(s)              0 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\logs\refs\remotes\origin
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+08/08/2025  06:39 AM               191 HEAD
+               1 File(s)            191 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\objects
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          info
+08/08/2025  06:39 AM    <DIR>          pack
+               0 File(s)              0 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\objects\info
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\objects\pack
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+08/08/2025  06:39 AM             2,836 pack-7493a170cdb0ce4a6fec4bd0dc8514727fafed07.idx
+08/08/2025  06:39 AM         2,324,614 pack-7493a170cdb0ce4a6fec4bd0dc8514727fafed07.pack
+08/08/2025  06:39 AM               304 pack-7493a170cdb0ce4a6fec4bd0dc8514727fafed07.rev
+               3 File(s)      2,327,754 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\refs
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          heads
+08/08/2025  06:39 AM    <DIR>          remotes
+08/08/2025  06:39 AM    <DIR>          tags
+               0 File(s)              0 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\refs\heads
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+08/08/2025  06:39 AM                41 main
+               1 File(s)             41 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\refs\remotes
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+08/08/2025  06:39 AM    <DIR>          origin
+               0 File(s)              0 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\refs\remotes\origin
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+08/08/2025  06:39 AM                30 HEAD
+               1 File(s)             30 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\.git\refs\tags
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\admin
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:55 AM    <DIR>          ..
+08/08/2025  06:39 AM            20,250 edit_property.php
+08/08/2025  06:39 AM            28,135 index.php
+08/08/2025  06:39 AM             3,576 upload_image_ajax.php
+08/08/2025  06:39 AM            19,513 upload_property.php
+               4 File(s)         71,474 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\auth
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:55 AM    <DIR>          ..
+08/08/2025  06:39 AM             1,316 login.php
+08/08/2025  06:39 AM                91 logout.php
+08/08/2025  06:39 AM               879 register.php
+               3 File(s)          2,286 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\css
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:55 AM    <DIR>          ..
+08/08/2025  06:39 AM            31,135 style.css
+               1 File(s)         31,135 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\includes
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:55 AM    <DIR>          ..
+08/08/2025  06:48 AM               324 db_connect.php
+08/08/2025  06:39 AM             5,772 footer.php
+08/08/2025  06:39 AM             3,099 header.php
+               3 File(s)          9,195 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\uploads
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:55 AM    <DIR>          ..
+08/08/2025  06:39 AM    <DIR>          agents
+08/08/2025  06:39 AM            35,130 Desain_rumah.jpg
+08/08/2025  06:39 AM            63,434 Desain_rumah_minimalis_modern.jpg
+08/08/2025  06:39 AM    <DIR>          hero
+08/08/2025  06:39 AM            63,434 img_68761bf5165133.12384107.jpg
+08/08/2025  06:39 AM            63,434 img_68761c4e2ac527.77294856.jpg
+08/08/2025  06:39 AM            35,130 img_6876870f8e99d4.94544596.jpg
+08/08/2025  06:39 AM            54,285 img_68768da9afcee1.90072522.png
+08/08/2025  06:39 AM             6,831 img_687696c11d6ce1.96607603.jpeg
+08/08/2025  06:39 AM            63,434 img_6876a02a024880.73161506.jpg
+08/08/2025  06:39 AM            35,130 img_6876a03c3219c5.44081300.jpg
+08/08/2025  06:39 AM            54,285 img_68777333241333.24422136.png
+08/08/2025  06:39 AM            35,130 img_6877733933d629.36031385.jpg
+08/08/2025  06:39 AM            54,285 img_687b9f2c1055f9.03575798.png
+08/08/2025  06:39 AM            63,434 img_688cb59c3dd275.00555717.jpg
+08/08/2025  06:39 AM            35,130 img_688cb59fc0bdc7.17503185.jpg
+08/08/2025  06:39 AM            35,130 img_689498a7d7ec69.03084077.jpg
+08/08/2025  06:39 AM            35,130 img_6894990b5bd196.91269333.jpg
+08/08/2025  06:39 AM            63,434 img_68949a00831a05.40548270.jpg
+08/08/2025  06:39 AM            54,285 img_68949d6668b512.89437661.png
+08/08/2025  06:39 AM            41,044 latua-icon.jpg
+08/08/2025  06:39 AM         2,093,114 Main Maskot Elif With Glow BlackLine.PNG
+              20 File(s)      2,984,643 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\uploads\agents
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+08/08/2025  06:39 AM            35,130 agent_6889e517553a24.08319314.jpg
+08/08/2025  06:39 AM            54,285 agent_6889e98a9fcc99.58169634.png
+08/08/2025  06:39 AM            35,130 agent_68949a4c42f926.98076251.jpg
+               3 File(s)        124,545 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\uploads\hero
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:39 AM    <DIR>          ..
+08/08/2025  06:39 AM            35,130 hero_6888c161ee7d30.89054509.jpg
+08/08/2025  06:39 AM            63,434 hero_68948e86ab3483.71106726.jpg
+               2 File(s)         98,564 bytes
+
+ Directory of C:\xampp\htdocs\Latua-Group\user
+
+08/08/2025  06:39 AM    <DIR>          .
+08/08/2025  06:55 AM    <DIR>          ..
+08/08/2025  06:39 AM             4,255 rent_properties.php
+08/08/2025  06:39 AM             4,188 sale_properties.php
+               2 File(s)          8,443 bytes
+
+     Total Files Listed:
+              71 File(s)      5,735,488 bytes
+              67 Dir(s)  87,365,431,296 bytes free

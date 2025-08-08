@@ -6,70 +6,112 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Property Web</title>
+    <title>Asia One Property</title>
     <link rel="stylesheet" href="/LatuaGroup/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* --- START HEADER STYLES --- */
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 50px;
             background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            padding: 10px 10px;
+            text-align: center;
+            position: relative;
+            z-index: 1000;
         }
 
         .logo img {
-            height: 60px;
+            height: 360px;
+            width: auto;
+            margin-bottom: 5px; /* Jarak lebih dekat dengan email */
         }
 
-        .header-right {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
+        .contact-info {
+            margin-bottom: 10px;
         }
 
-        .contact-social {
+        .contact-info .email {
+            font-size: 14px;
+            color: #666;
             display: flex;
             align-items: center;
-            margin-bottom: 5px;
+            justify-content: center;
         }
 
-        .contact-social .email {
-            margin-right: 15px;
-            font-size: 12px;
-            color: #555;
+        .contact-info .email i {
+            margin-right: 6px;
         }
 
-        .contact-social a {
+        .social-media {
+            margin-bottom: 15px;
+        }
+
+        .social-media a {
             font-size: 16px;
-            color: #555;
-            margin-left: 8px;
+            color: #666;
+            margin: 0 8px;
+            transition: color 0.3s ease;
         }
 
-        .contact-social .fa-facebook { color: #3b5998; }
-        .contact-social .fa-instagram { color: #E1306C; }
-        .contact-social .fa-youtube { color: #ff0000; }
+        .social-media a:hover {
+            color: #333;
+        }
 
-        .nav-links {
+        .social-media .fa-facebook { color: #3b5998; }
+        .social-media .fa-instagram { color: #E1306C; }
+        .social-media .fa-youtube { color: #ff0000; }
+
+        .nav-buttons {
             display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 8px;
         }
 
         .nav-button {
-            background-color: #793475;
+            background-color: #334894; /* Warna tema sesuai #334894 */
             color: #fff;
             padding: 8px 15px;
             text-decoration: none;
-            border-radius: 15px;
+            border-radius: 8px;
             font-size: 12px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            white-space: nowrap;
         }
 
         .nav-button:hover {
-            background-color: #5a2658;
+            background-color: #4a5fb3; /* Hover warna sesuai tema */
+            transform: translateY(-1px);
+        }
+
+        /* Responsif */
+        @media (min-width: 768px) {
+            .header {
+                padding: 15px 30px;
+            }
+
+            .logo img {
+                height: 450px;
+            }
+
+            .contact-info .email {
+                font-size: 16px;
+            }
+
+            .social-media a {
+                font-size: 18px;
+                margin: 0 10px;
+            }
+
+            .nav-button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .nav-buttons {
+                gap: 12px;
+            }
         }
         /* --- END HEADER STYLES --- */
     </style>
@@ -78,22 +120,22 @@ session_start();
     <div class="header">
         <div class="logo">
             <a href="/LatuaGroup/index.php">
-                <img src="/LatuaGroup/uploads/latua-icon.jpg" alt="Latuea Land Logo">
+                <img src="/Latua-Group/latuea-logo.jpg" alt="Asia One Property Logo">
             </a>
         </div>
-        <div class="header-right">
-            <div class="contact-social">
-                <span class="email"><i class="fa-solid fa-envelope"></i> latuealand@gmail.com</span>
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
-            </div>
-            <div class="nav-links">
-                <a href="/LatuaGroup/index.php" class="nav-button">Home</a>
-                <a href="/LatuaGroup/about.php" class="nav-button">Tentang Kami</a>
-                <a href="/LatuaGroup/office.php" class="nav-button">Kantor Kami</a>
-                <a href="/LatuaGroup/contact.php" class="nav-button">Hubungi Kami</a>
-            </div>
+        <div class="contact-info">
+            <span class="email"><i class="fa-solid fa-envelope"></i> cs@asiaone.co.id</span>
+        </div>
+        <div class="social-media">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+        <div class="nav-buttons">
+            <a href="/Latua-Group/index.php" class="nav-button">Home</a>
+            <a href="/Latua-Group/about.php" class="nav-button">Tentang Kami</a>
+            <a href="/Latua-Group/office.php" class="nav-button">Kantor Kami</a>
+            <a href="/Latua-Group/contact.php" class="nav-button">Hubungi Kami</a>
         </div>
     </div>
     <div class="container">

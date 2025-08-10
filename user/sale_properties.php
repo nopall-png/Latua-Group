@@ -3,13 +3,13 @@ include '../includes/db_connect.php';
 include '../includes/header.php';
 
 // Konfigurasi Paginasi
-$properties_per_page = 9; // Jumlah properti per halaman
+$properties_per_page = 9;
 $current_page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($current_page - 1) * $properties_per_page;
 
-$property_type = 'for_sale'; // Tipe properti spesifik untuk halaman ini
+$property_type = 'for_sale';
 
-// 1. Hitung Total Properti untuk tipe ini
+// 1. Hitung Total Properti
 $count_stmt = $pdo->prepare("SELECT COUNT(id) FROM properties WHERE property_type = ?");
 $count_stmt->execute([$property_type]);
 $total_properties = $count_stmt->fetchColumn();
@@ -17,14 +17,18 @@ $total_properties = $count_stmt->fetchColumn();
 // 2. Hitung Total Halaman
 $total_pages = ceil($total_properties / $properties_per_page);
 
-// 3. Ambil Properti untuk Halaman Saat Ini dengan gambar pertama
+// 3. Ambil Properti untuk Halaman Saat Ini
 $sql = "
     SELECT 
         p.id, 
         p.title, 
-        p.description, 
         p.price, 
-        p.id_properti,
+        p.province, 
+        p.regency, 
+        p.luas_tanah,
+        p.luas_bangunan,
+        p.kamar_tidur,
+        p.kamar_mandi,
         pi.image_path AS main_image_path
     FROM 
         properties p
@@ -48,22 +52,227 @@ $stmt->bindValue(2, $properties_per_page, PDO::PARAM_INT);
 $stmt->bindValue(3, $offset, PDO::PARAM_INT);
 $stmt->execute();
 $properties = $stmt->fetchAll();
-
 ?>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Properties for Sale</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: 'Lato', sans-serif;
+        }
+        
+        h1 {
+            color: #334894;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        
+        /* Property Grid */
+        .property-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        /* Property Card */
+        .property-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            height: 100%;
+        }
+        
+        .property-card {
+            background: #FFFFFF;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .property-image-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .property-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .property-card:hover .property-image-container img {
+            transform: scale(1.03);
+        }
+        
+        /* Price Overlay */
+        .price-overlay {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: #FFFFFF;
+            color: #000000;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .price-text {
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 0;
+            color: #000000;
+        }
+        
+        /* Card Content */
+        .property-card-content {
+            padding: 15px;
+            flex-grow: 1;
+        }
+        
+        .property-title {
+            font-size: 1.2rem;
+            color: #000000;
+            margin-bottom: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .property-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .detail-item i {
+            color: #334894;
+            font-size: 0.9rem;
+            min-width: 16px;
+            text-align: center;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .page-link, .prev-next {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #334894;
+            transition: all 0.3s ease;
+        }
+        
+        .page-link:hover, .prev-next:hover {
+            background-color: #334894;
+            color: white;
+        }
+        
+        .active {
+            background-color: #334894;
+            color: white;
+            border-color: #334894;
+        }
+        
+        .page-dots {
+            padding: 8px 12px;
+        }
+        
+        /* No Properties Message */
+        .no-properties {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 40px 0;
+            color: #666;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
 <div class="container">
     <h1>Properties for Sale</h1>
     <div class="property-grid">
         <?php if (empty($properties)): ?>
-            <p>Tidak ada properti untuk dijual saat ini.</p>
+            <p class="no-properties">Tidak ada properti untuk dijual saat ini.</p>
         <?php else: ?>
             <?php foreach ($properties as $property): ?>
                 <a href="../detail_property.php?id=<?php echo $property['id']; ?>" class="property-card-link">
                     <div class="property-card">
-                        <img src="../Uploads/<?php echo htmlspecialchars($property['main_image_path'] ?? 'default.jpg'); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>">
-                        <h3><?php echo htmlspecialchars($property['title']); ?></h3>
-                        <p><?php echo htmlspecialchars($property['description']); ?></p>
-                        <p>Price: $<?php echo number_format($property['price'], 2); ?></p>
+                        <div class="property-image-container">
+                            <img src="../Uploads/<?php echo htmlspecialchars($property['main_image_path'] ?? 'default.jpg'); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>">
+                            <div class="price-overlay">
+                                <p class="price-text">Rp <?php echo number_format($property['price'], 0, ',', '.'); ?></p>
+                            </div>
+                        </div>
+                        <div class="property-card-content">
+                            <h3 class="property-title"><?php echo htmlspecialchars($property['title']); ?></h3>
+                            <div class="property-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-ruler-combined"></i>
+                                    <span class="detail-value"><?php echo htmlspecialchars($property['luas_tanah'] ?? 'N/A'); ?> m²</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-home"></i>
+                                    <span class="detail-value"><?php echo htmlspecialchars($property['luas_bangunan'] ?? 'N/A'); ?> m²</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-bed"></i>
+                                    <span class="detail-value"><?php echo htmlspecialchars($property['kamar_tidur'] ?? 'N/A'); ?></span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-bath"></i>
+                                    <span class="detail-value"><?php echo htmlspecialchars($property['kamar_mandi'] ?? 'N/A'); ?></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </a>
             <?php endforeach; ?>
@@ -106,7 +315,8 @@ $properties = $stmt->fetchAll();
             <?php endif; ?>
         </div>
     <?php endif; ?>
-
 </div>
 
 <?php include '../includes/footer.php'; ?>
+</body>
+</html>

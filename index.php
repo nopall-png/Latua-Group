@@ -813,30 +813,40 @@ body {
 .price-overlay {
     position: absolute;
     bottom: 10px;
-    right: 10px;
-    background: rgba(51, 72, 148, 0.8);
-    color: #FFFFFF;
-    padding: 8px 12px;
-    border-radius: 5px;
+    left: 10px; /* Pindah ke kiri */
+    background: #FFFFFF;
+    color: #000000;
+    padding: 4px 8px; /* Padding diperkecil */
+    border-radius: 4px;
+    font-size: 0.9rem; /* Ukuran font diperkecil */
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+    display: inline-block; /* Background mengikuti text */
+    line-height: 1.2;
+    white-space: nowrap; /* Text tidak wrap */
 }
 
 .price-text {
-    font-size: 1.1rem;
+    font-size: 0.9rem; /* Ukuran font diperkecil */
     font-weight: bold;
     font-family: 'Arial', sans-serif;
     margin: 0;
+    letter-spacing: 0.3px;
+    color: #000000;
 }
 
 .property-card-content {
     padding: 15px;
+    text-align: left; /* All text aligned left */
 }
 
 .property-title {
     font-size: 1.5rem;
-    color: #334894;
+    color: #000000; /* Changed to black */
     margin-bottom: 10px;
-    text-align: center;
-    font-weight: 400;
+    text-align: left; /* Changed to left align */
+    font-weight: 600; /* Made slightly bolder */
     font-family: 'Lato', sans-serif;
 }
 
@@ -844,7 +854,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
-    justify-content: center;
+    justify-content: flex-start; /* Changed to flex-start for left alignment */
 }
 
 .detail-item {
@@ -856,11 +866,12 @@ body {
     background: #f0f4ff;
     padding: 4px 6px;
     border-radius: 5px;
+    text-align: left; /* Added left alignment */
 }
 
 .detail-value {
     font-weight: bold;
-    color: #334894;
+    color: #000000; /* Changed to black */
     font-family: 'Arial', sans-serif;
 }
 
@@ -868,7 +879,6 @@ body {
     color: #334894;
     font-size: 0.85rem;
 }
-
 /* View All Link */
 .view-all-link {
     text-align: center;

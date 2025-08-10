@@ -133,7 +133,7 @@ session_start();
         </div>
         <div class="nav-buttons">
             <a href="/LatuaGroup/index.php" class="nav-button">Home</a>
-            <a href="/Latu-Group/about.php" class="nav-button">Tentang Kami</a>
+            <a href="/LatuaGroup/about.php" class="nav-button">Tentang Kami</a>
             <a href="/LatuaGroup/office.php" class="nav-button">Kantor Kami</a>
             <a href="/LatuaGroup/contact.php" class="nav-button">Hubungi Kami</a>
         </div>

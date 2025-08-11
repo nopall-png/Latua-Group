@@ -1,21 +1,25 @@
 <?php
-include '../includes/db_connect.php';
-include '../includes/header.php';
+// Start output buffering to capture any unintended output
+ob_start();
 
+// Include database connection
+require_once '../includes/db_connect.php';
+
+// Start session and check if user is logged in
+session_start();
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../auth/login.php');
     exit();
 }
 
-$message = ''; // Pesan untuk hero images
-$upload_messages_properties = []; // Pesan untuk properti dan pengajuan
-$agent_message = ''; // Pesan untuk agen
+// Initialize message variables
+$message = '';
+$upload_messages_properties = [];
+$agent_message = '';
 
 // =========================================================
-// Logika Pengelolaan GAMBAR HERO (TANPA GD LIBRARY)
+// Hero Images Management
 // =========================================================
-
-// Proses upload gambar hero baru
 if (isset($_POST['upload_hero'])) {
     if (isset($_FILES['hero_image']) && $_FILES['hero_image']['error'] == UPLOAD_ERR_OK) {
         $target_dir = "../Uploads/hero/";
@@ -45,11 +49,14 @@ if (isset($_POST['upload_hero'])) {
             }
         }
     } else {
-        $message = "<p class='error-message'>Tidak ada gambar yang dipilih atau terjadi error upload: " . $_FILES['hero_image']['error'] . ".</p>";
+        $message = "<p class='error-message'>Tidak ada gambar yang dipilih atau terjadi error upload: " . ($_FILES['hero_image']['error'] ?? 'Unknown') . ".</p>";
     }
+    // Store message in session to avoid headers issue
+    $_SESSION['message'] = $message;
+    header('Location: index.php');
+    exit();
 }
 
-// Proses set/unset gambar hero aktif
 if (isset($_GET['action']) && isset($_GET['hero_id']) && is_numeric($_GET['hero_id'])) {
     $hero_id = $_GET['hero_id'];
     $action = $_GET['action'];
@@ -80,11 +87,11 @@ if (isset($_GET['action']) && isset($_GET['hero_id']) && is_numeric($_GET['hero_
             $message = "<p class='error-message'>Error menonaktifkan gambar: " . $e->getMessage() . "</p>";
         }
     }
-    header('Location: ' . strtok($_SERVER["REQUEST_URI"], '?') . '?msg=' . urlencode(strip_tags($message)));
+    $_SESSION['message'] = $message;
+    header('Location: index.php');
     exit();
 }
 
-// Proses hapus gambar hero
 if (isset($_GET['delete_hero_id']) && is_numeric($_GET['delete_hero_id'])) {
     $delete_id = $_GET['delete_hero_id'];
     $stmt_get_path = $pdo->prepare("SELECT image_path FROM hero_images WHERE id = ?");
@@ -109,15 +116,14 @@ if (isset($_GET['delete_hero_id']) && is_numeric($_GET['delete_hero_id'])) {
     } else {
         $message = "<p class='error-message'>Gambar hero tidak ditemukan.</p>";
     }
-    header('Location: ' . strtok($_SERVER["REQUEST_URI"], '?') . '?msg=' . urlencode(strip_tags($message)));
+    $_SESSION['message'] = $message;
+    header('Location: index.php');
     exit();
 }
 
 // =========================================================
-// Logika Pengelolaan AGEN
+// Agents Management
 // =========================================================
-
-// Proses tambah agen baru
 if (isset($_POST['add_agent'])) {
     $agent_name = trim($_POST['agent_name']);
     $phone_number = trim($_POST['phone_number']);
@@ -160,11 +166,11 @@ if (isset($_POST['add_agent'])) {
             }
         }
     }
-    header('Location: ' . strtok($_SERVER["REQUEST_URI"], '?') . '?agent_msg=' . urlencode(strip_tags($agent_message)));
+    $_SESSION['agent_message'] = $agent_message;
+    header('Location: index.php');
     exit();
 }
 
-// Proses hapus agen
 if (isset($_GET['delete_agent_id']) && is_numeric($_GET['delete_agent_id'])) {
     $delete_agent_id = $_GET['delete_agent_id'];
     $stmt_get_agent_path = $pdo->prepare("SELECT photo_path FROM agents WHERE id = ?");
@@ -177,7 +183,7 @@ if (isset($_GET['delete_agent_id']) && is_numeric($_GET['delete_agent_id'])) {
             $stmt_delete_agent->execute([$delete_agent_id]);
 
             $file_path = '../Uploads/agents/' . $agent_photo_data['photo_path'];
-            if (file_exists($file_path)) {
+            if (file_exists($file_path) && !empty($agent_photo_data['photo_path'])) {
                 unlink($file_path);
             }
             $agent_message = "<p class='success-message'>Agen berhasil dihapus!</p>";
@@ -187,11 +193,64 @@ if (isset($_GET['delete_agent_id']) && is_numeric($_GET['delete_agent_id'])) {
     } else {
         $agent_message = "<p class='error-message'>Agen tidak ditemukan.</p>";
     }
-    header('Location: ' . strtok($_SERVER["REQUEST_URI"], '?') . '?agent_msg=' . urlencode(strip_tags($agent_message)));
+    $_SESSION['agent_message'] = $agent_message;
+    header('Location: index.php');
     exit();
 }
 
-// Ambil data agen
+// =========================================================
+// Properties Management
+// =========================================================
+if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {
+    $property_id = $_GET['delete_id'];
+    
+    try {
+        $stmt_images = $pdo->prepare("SELECT image_path FROM property_images WHERE property_id = ?");
+        $stmt_images->execute([$property_id]);
+        $images = $stmt_images->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($images as $image) {
+            $image_path = '../Uploads/properties/' . $image['image_path'];
+            if (file_exists($image_path)) {
+                unlink($image_path);
+            }
+        }
+        
+        $stmt_delete_images = $pdo->prepare("DELETE FROM property_images WHERE property_id = ?");
+        $stmt_delete_images->execute([$property_id]);
+        
+        $stmt_delete_property = $pdo->prepare("DELETE FROM properties WHERE id = ?");
+        $stmt_delete_property->execute([$property_id]);
+        
+        $upload_messages_properties[] = "<p class='success-message'>Properti berhasil dihapus!</p>";
+    } catch (PDOException $e) {
+        $upload_messages_properties[] = "<p class='error-message'>Error menghapus properti: " . $e->getMessage() . "</p>";
+    }
+    $_SESSION['property_message'] = $upload_messages_properties[0];
+    header('Location: index.php');
+    exit();
+}
+
+// =========================================================
+// Pending Properties Management
+// =========================================================
+if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id'])) {
+    $delete_pending_id = $_GET['delete_pending_id'];
+    try {
+        $stmt_delete_pending = $pdo->prepare("DELETE FROM pending_properties WHERE id = ?");
+        $stmt_delete_pending->execute([$delete_pending_id]);
+        $upload_messages_properties[] = "<p class='success-message'>Pengajuan properti berhasil dihapus!</p>";
+    } catch (PDOException $e) {
+        $upload_messages_properties[] = "<p class='error-message'>Error menghapus pengajuan: " . $e->getMessage() . "</p>";
+    }
+    $_SESSION['property_message'] = $upload_messages_properties[0];
+    header('Location: index.php');
+    exit();
+}
+
+// =========================================================
+// Fetch Data for Display
+// =========================================================
 $agents = [];
 try {
     $stmt_agents = $pdo->query("SELECT * FROM agents ORDER BY name ASC");
@@ -201,7 +260,6 @@ try {
     error_log("Error fetching agents: " . $e->getMessage());
 }
 
-// Ambil data hero images
 $hero_images = [];
 try {
     $stmt_hero = $pdo->query("SELECT * FROM hero_images ORDER BY uploaded_at DESC");
@@ -211,7 +269,6 @@ try {
     error_log("Error fetching hero images: " . $e->getMessage());
 }
 
-// Ambil data properti untuk dijual dengan gambar dari property_images
 $properties_for_sale = [];
 try {
     $stmt_sale = $pdo->prepare("
@@ -228,7 +285,6 @@ try {
     error_log("Error fetching properties for sale: " . $e->getMessage());
 }
 
-// Ambil data properti untuk disewakan dengan gambar dari property_images
 $properties_for_rent = [];
 try {
     $stmt_rent = $pdo->prepare("
@@ -237,6 +293,7 @@ try {
         LEFT JOIN property_images pi ON p.id = pi.property_id 
         WHERE p.property_type = ? 
         ORDER BY p.created_at DESC
+        LIMIT 3
     ");
     $stmt_rent->execute(['for_rent']);
     $properties_for_rent = $stmt_rent->fetchAll(PDO::FETCH_ASSOC);
@@ -245,7 +302,6 @@ try {
     error_log("Error fetching properties for rent: " . $e->getMessage());
 }
 
-// Ambil data pengajuan properti dari pengguna
 $pending_properties = [];
 try {
     $stmt_pending = $pdo->query("SELECT * FROM pending_properties ORDER BY created_at DESC");
@@ -255,19 +311,18 @@ try {
     error_log("Error fetching pending properties: " . $e->getMessage());
 }
 
-// Proses hapus pengajuan properti
-if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id'])) {
-    $delete_pending_id = $_GET['delete_pending_id'];
-    try {
-        $stmt_delete_pending = $pdo->prepare("DELETE FROM pending_properties WHERE id = ?");
-        $stmt_delete_pending->execute([$delete_pending_id]);
-        $upload_messages_properties[] = "<p class='success-message'>Pengajuan properti berhasil dihapus!</p>";
-    } catch (PDOException $e) {
-        $upload_messages_properties[] = "<p class='error-message'>Error menghapus pengajuan: " . $e->getMessage() . "</p>";
-    }
-    header('Location: ' . strtok($_SERVER["REQUEST_URI"], '?'));
-    exit();
-}
+// Retrieve messages from session
+$message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
+$agent_message = isset($_SESSION['agent_message']) ? $_SESSION['agent_message'] : '';
+$property_message = isset($_SESSION['property_message']) ? $_SESSION['property_message'] : '';
+
+// Clear session messages after retrieval
+unset($_SESSION['message']);
+unset($_SESSION['agent_message']);
+unset($_SESSION['property_message']);
+
+// Include header after all logic
+require_once '../includes/header.php';
 ?>
 
 <style>
@@ -337,7 +392,7 @@ if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id']))
         margin-right: 5px;
     }
 
-    /* Hero Images Styling - Updated to Integrate with Images */
+    /* Hero Images Styling */
     .hero-image-grid {
         display: flex;
         flex-wrap: nowrap;
@@ -347,7 +402,7 @@ if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id']))
         padding-bottom: 10px;
     }
     .hero-image-item {
-        flex: 0 0 300px; /* Fixed width for consistency */
+        flex: 0 0 300px;
         height: auto;
         border: 2px solid #ddd;
         border-radius: 8px;
@@ -358,8 +413,8 @@ if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id']))
     }
     .hero-image-item img {
         width: 100%;
-        height: 200px; /* Fixed height for uniformity */
-        object-fit: cover; /* Ensures image fills the space without distortion */
+        height: 200px;
+        object-fit: cover;
         display: block;
     }
     .hero-image-actions {
@@ -372,9 +427,8 @@ if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id']))
         margin: 0 5px;
     }
 
-    /* Ensure images integrate with actions */
     .hero-image-item:hover {
-        transform: scale(1.02); /* Slight zoom on hover for interactivity */
+        transform: scale(1.02);
     }
 </style>
 
@@ -385,7 +439,9 @@ if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id']))
     <!-- Section untuk Hero Images -->
     <div class="admin-section">
         <h2>Kelola Gambar Hero Halaman Utama</h2>
-        <?php echo $message; ?>
+        <?php if (!empty($message)): ?>
+            <p><?php echo $message; ?></p>
+        <?php endif; ?>
 
         <form action="" method="POST" enctype="multipart/form-data" class="upload-hero-form">
             <h3>Unggah Gambar Hero Baru:</h3>
@@ -422,7 +478,9 @@ if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id']))
     <!-- Section untuk Agen -->
     <div class="admin-section">
         <h2>Kelola Agen</h2>
-        <?php echo $agent_message; ?>
+        <?php if (!empty($agent_message)): ?>
+            <p><?php echo $agent_message; ?></p>
+        <?php endif; ?>
 
         <form action="" method="POST" enctype="multipart/form-data" class="upload-hero-form">
             <h3>Tambah Agen Baru</h3>
@@ -438,7 +496,7 @@ if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id']))
             <label for="agent_photo">Foto Agen (Opsional):</label>
             <input type="file" name="agent_photo" id="agent_photo" accept="image/jpeg, image/png">
             
-            <button type="submit" name="add_agent">Tambah Agen</button>
+            <button type="submit" name="add_agent" class="btn-upload">Tambah Agen</button>
         </form>
 
         <h3>Daftar Agen Tersedia:</h3>
@@ -481,9 +539,9 @@ if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id']))
     <div class="admin-section">
         <h2>Kelola Daftar Properti</h2>
         <button class="add-property-btn" onclick="location.href='upload_property.php'">Tambah Properti Baru</button>
-        <?php foreach ($upload_messages_properties as $msg): ?>
-            <p><?php echo $msg; ?></p>
-        <?php endforeach; ?>
+        <?php if (!empty($property_message)): ?>
+            <p><?php echo $property_message; ?></p>
+        <?php endif; ?>
 
         <div class="property-section">
             <h3>Properties for Sale</h3>
@@ -557,6 +615,9 @@ if (isset($_GET['delete_pending_id']) && is_numeric($_GET['delete_pending_id']))
     <!-- Section untuk Pengajuan Properti dari Pengguna -->
     <div class="admin-section">
         <h2>Pengajuan Properti dari Pengguna</h2>
+        <?php if (!empty($property_message)): ?>
+            <p><?php echo $property_message; ?></p>
+        <?php endif; ?>
         <?php if (empty($pending_properties)): ?>
             <p>Tidak ada pengajuan properti dari pengguna untuk saat ini.</p>
         <?php else: ?>
@@ -598,12 +659,19 @@ function confirmDeleteAgent(id, type, name = '') {
     } else if (type === 'pending') {
         confirmMessage = 'Apakah Anda yakin ingin menghapus pengajuan ini?';
         redirectUrl = '?delete_pending_id=' + id;
+    } else if (type === 'property') {
+        confirmMessage = 'Apakah Anda yakin ingin menghapus properti ini?';
+        redirectUrl = '?delete_id=' + id;
     }
 
     if (confirm(confirmMessage)) {
         window.location.href = redirectUrl;
     }
+    return false;
 }
 </script>
 
-<?php include '../includes/footer.php'; ?>
+<?php
+include '../includes/footer.php';
+ob_end_flush();
+?>

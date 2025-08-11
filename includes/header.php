@@ -1,6 +1,3 @@
-<?php
-session_start();
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -154,7 +151,7 @@ session_start();
     <div class="header">
         <div class="logo">
             <a href="/LatuaGroup/index.php">
-                <img src="/LatuaGroup/latuea-logo.jpg" alt="Latuea Gorup Logo">
+                <img src="/LatuaGroup/latualogo.png" alt="Latuea Gorup Logo">
             </a>
         </div>
         <div class="contact-info">

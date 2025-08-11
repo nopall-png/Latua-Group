@@ -67,17 +67,20 @@ include 'includes/header.php';
 
 <style>
     /* General Styling */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
     body {
-        background-color: #F5F6FA;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        font-family: 'Inter', sans-serif;
         color: #333;
         margin: 0;
         padding: 0;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
         min-height: 100vh;
     }
+    
     .container {
         background-color: #FFFFFF;
         max-width: 750px;
@@ -88,52 +91,62 @@ include 'includes/header.php';
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         animation: fadeIn 0.5s ease-in-out;
     }
+    
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
+    
     h2 {
-        color: #5C2D91;
+        color: #2c3e50;
         text-transform: uppercase;
         font-size: 28px;
         text-align: center;
         margin-bottom: 25px;
-        font-weight: 600;
+        font-weight: 700;
     }
+    
     .form-group {
         margin-bottom: 20px;
         position: relative;
     }
+    
     label {
-        font-weight: 500;
+        font-weight: 600;
         font-size: 16px;
         color: #444;
         display: block;
         margin-bottom: 8px;
     }
+    
     label span {
-        color: #DC3545;
+        color: #e74c3c;
     }
+    
     input, select, textarea {
         width: 100%;
         padding: 12px;
-        border: 2px solid #E9ECEF;
+        border: 1px solid #E9ECEF;
         border-radius: 8px;
         font-size: 16px;
         transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
+    
     input:focus, select:focus, textarea:focus {
-        border-color: #5C2D91;
-        box-shadow: 0 0 5px rgba(92, 45, 145, 0.3);
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
         outline: none;
     }
+    
     .form-group-inline {
         display: flex;
         gap: 20px;
     }
+    
     .form-group-inline .form-group {
         flex: 1;
     }
+    
     .radio-group {
         display: flex;
         gap: 15px;
@@ -141,10 +154,12 @@ include 'includes/header.php';
         flex-wrap: wrap;
         align-items: center;
     }
+    
     .radio-group input[type="radio"] {
         margin: 0 5px 0 0;
-        accent-color: #5C2D91;
+        accent-color: #007bff;
     }
+    
     .radio-group label {
         font-weight: normal;
         font-size: 15px;
@@ -153,23 +168,27 @@ include 'includes/header.php';
         display: flex;
         align-items: center;
     }
+    
     .btn-primary {
         display: inline-block;
-        background-color: #FFC107;
-        color: #333;
+        background-color: #007bff;
+        color: #FFF;
         padding: 12px 25px;
         text-decoration: none;
         border-radius: 8px;
         font-weight: 600;
         text-align: center;
         transition: background-color 0.3s ease, transform 0.2s ease;
+        margin-top: 10px;
     }
+    
     .btn-primary:hover {
-        background-color: #E0A800;
+        background-color: #0056b3;
         transform: translateY(-2px);
     }
+    
     button[type="submit"] {
-        background-color: #5C2D91;
+        background-color: #28a745;
         color: #FFF;
         padding: 12px 25px;
         border: none;
@@ -180,14 +199,17 @@ include 'includes/header.php';
         margin-top: 20px;
         transition: background-color 0.3s ease, transform 0.2s ease;
     }
+    
     button[type="submit"]:hover {
-        background-color: #4A2377;
+        background-color: #218838;
         transform: translateY(-2px);
     }
+    
     #message {
         margin-bottom: 20px;
         text-align: center;
     }
+    
     .alert {
         padding: 15px;
         border-radius: 8px;
@@ -199,56 +221,66 @@ include 'includes/header.php';
         justify-content: center;
         gap: 10px;
     }
+    
     @keyframes slideIn {
         from { opacity: 0; transform: translateY(-20px); }
         to { opacity: 1; transform: translateY(0); }
     }
+    
     .alert-success {
         color: #155724;
         background-color: #D4EDDA;
         border: 1px solid #C3E6CB;
     }
+    
     .alert-success::before {
         content: "✔"; /* Tanda centang */
         font-size: 18px;
         color: #155724;
     }
+    
     .alert-danger {
         color: #721C24;
         background-color: #F8D7DA;
         border: 1px solid #F5C6CB;
     }
+    
     .alert-danger::before {
         content: "✘"; /* Tanda silang */
         font-size: 18px;
         color: #721C24;
     }
+    
     /* WhatsApp Chat Button */
     .whatsapp-chat {
         position: fixed;
         bottom: 20px;
         right: 20px;
-        background-color: #25D366;
+        background: linear-gradient(45deg, #10C65A, #0D994B);
         color: white;
         padding: 12px 20px;
         border-radius: 50px;
         display: flex;
         align-items: center;
         gap: 10px;
-        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        box-shadow: 0 4px 15px rgba(16, 198, 90, 0.4);
         text-decoration: none;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        z-index: 9999;
     }
+    
     .whatsapp-chat i {
         font-size: 24px;
     }
+    
     .whatsapp-chat:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(16, 198, 90, 0.6);
     }
+    
     /* Footer Styling */
     footer {
-        background-color: #5C2D91;
+        background-color: #2c3e50;
         color: white;
         text-align: center;
         padding: 15px 0;
@@ -258,19 +290,32 @@ include 'includes/header.php';
         clear: both;
         font-size: 14px;
     }
+    
     /* Responsive Design */
     @media (max-width: 768px) {
+        body {
+            min-height: auto;
+        }
+        
         .container {
             margin: 10px;
             padding: 20px;
         }
+        
+        h2 {
+            font-size: 24px;
+        }
+        
         .form-group-inline {
             flex-direction: column;
+            gap: 10px;
         }
+        
         .whatsapp-chat {
             bottom: 10px;
             right: 10px;
             padding: 10px 15px;
+            font-size: 14px;
         }
     }
 </style>
@@ -339,8 +384,8 @@ include 'includes/header.php';
     </form>
 </div>
 
-<a href="https://wa.me/62123456789" class="whatsapp-chat">
-    <i class="fab fa-whatsapp"></i> Butuh bantuan? Chat dengan kami
+<a href="https://wa.me/62123456789" class="whatsapp-chat" target="_blank">
+    <i class="fab fa-whatsapp"></i> Butuh bantuan?
 </a>
 
 <script>

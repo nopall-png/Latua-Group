@@ -1,12 +1,22 @@
 <?php include 'includes/header.php'; ?>
 
 <style>
-    /* CSS khusus untuk halaman about_us.php */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    /* CSS Umum */
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    /* Hero Section */
     .hero-image-about {
         position: relative;
         width: 100%;
         height: 70vh; /* Lebih tinggi dan responsif */
-        min-height: 500px; /* Tinggi minimum */
+        min-height: 400px;
         background-image: url('/LatuaGroup/uploads/about_us.jpg');
         background-size: cover;
         background-position: center;
@@ -24,24 +34,20 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.4);
+        background-color: rgba(0, 0, 0, 0.5);
     }
-
+    
     .hero-content {
         position: relative;
         z-index: 10;
         padding: 20px;
         max-width: 1200px;
         margin: 0 auto;
-        opacity: 0;
-        transform: translateY(50px);
-        animation: slideInAndFade 1s ease-out forwards;
-        animation-delay: 0.5s;
     }
-
+    
     .hero-title {
-        font-size: 4rem;
-        font-weight: bold;
+        font-size: 3.5rem;
+        font-weight: 700;
         margin: 0;
         text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
     }
@@ -69,18 +75,10 @@
         color: #ddd;
     }
 
-    @keyframes slideInAndFade {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
     /* Bagian Konten Tentang Kami */
     .about-content {
         padding: 70px 20px;
-        background-color: #f5f5f5;
-        text-align: center;
+        background-color: #f8f9fa;
     }
     
     .about-card {
@@ -90,51 +88,54 @@
         border-radius: 15px;
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         padding: 50px;
+        text-align: center;
     }
     
     .about-card h2 {
         font-size: 2.5rem;
-        color: #333;
-        margin-bottom: 30px;
+        color: #2c3e50;
+        margin-bottom: 20px;
         font-weight: 700;
     }
     
-    .about-card p {
+    .about-card .subtitle {
         font-size: 1.2rem;
         color: #555;
-        line-height: 1.8;
         margin-bottom: 25px;
-        text-align: center;
+        font-style: italic;
+    }
+    
+    .about-card p {
+        font-size: 1rem;
+        color: #555;
+        line-height: 1.8;
+        margin-bottom: 20px;
+        text-align: justify;
     }
     
     .mission-vision {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 40px;
-        flex-wrap: wrap;
-    }
-    
-    .mission, .vision {
-        flex: 1;
-        min-width: 300px;
-        padding: 30px;
-        margin: 15px;
-        background-color: #f9f9f9;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    
-    .mission h3, .vision h3 {
-        color: #2c3e50;
-        font-size: 1.8rem;
-        margin-bottom: 20px;
+        display: none; /* Menyembunyikan bagian mission-vision yang lama */
     }
 
-    /* Responsif untuk mobile */
+    /* Styling baru untuk bagian Visi Misi yang digabungkan */
+    .mission-vision-combined h3 {
+        color: #007bff;
+        font-size: 1.8rem;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-weight: 600;
+        text-align: center; /* Memastikan judul di tengah */
+    }
+
+    .mission-vision-combined p {
+        text-align: center;
+    }
+
+    /* Responsive untuk mobile */
     @media (max-width: 768px) {
         .hero-image-about {
             height: 50vh;
-            min-height: 400px;
+            min-height: 300px;
         }
         .hero-title {
             font-size: 2.5rem;
@@ -147,14 +148,17 @@
             padding: 30px 20px;
         }
         .about-card h2 {
-            font-size: 1.8rem;
+            font-size: 2rem;
+        }
+        .about-card .subtitle {
+            font-size: 1rem;
         }
         .about-card p {
-            font-size: 1rem;
             text-align: left;
         }
-        .mission-vision {
-            flex-direction: column;
+        
+        .mission-vision-combined h3 {
+            font-size: 1.5rem;
         }
     }
 </style>
@@ -176,15 +180,11 @@
         <p>Di Latuea Land, kami memahami bahwa setiap properti bukan sekadar bangunan—tetapi impian, tujuan, dan investasi masa depan. Sebagai perusahaan jasa properti yang berpengalaman dan terpercaya, kami hadir untuk membantu Anda dalam proses jual, sewa, maupun beli properti dengan cara yang mudah, cepat, dan menguntungkan.</p>
         <p>Kami adalah mitra properti Anda untuk setiap langkah perjalanan.</p>
         
-        <div class="mission-vision">
-            <div class="mission">
-                <h3>Misi Kami</h3>
-                <p>Memberikan solusi properti terbaik dengan integritas tinggi, transparansi, dan pelayanan prima untuk mewujudkan impian properti setiap klien.</p>
-            </div>
-            <div class="vision">
-                <h3>Visi Kami</h3>
-                <p>Menjadi perusahaan properti terdepan yang diakui sebagai mitra terpercaya dalam menciptakan nilai tambah bagi semua pihak.</p>
-            </div>
+        <div class="mission-vision-combined">
+            <h3>Misi Kami</h3>
+            <p>Memberikan solusi properti terbaik dengan integritas tinggi, transparansi, dan pelayanan prima untuk mewujudkan impian properti setiap klien.</p>
+            <h3>Visi Kami</h3>
+            <p>Menjadi perusahaan properti terdepan yang diakui sebagai mitra terpercaya dalam menciptakan nilai tambah bagi semua pihak.</p>
         </div>
     </div>
 </div>

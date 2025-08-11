@@ -31,7 +31,7 @@ if ($hours[0] !== 'Tutup') {
 <footer class="asiaone-footer">
     <div class="footer-container">
         <div class="footer-section">
-            <a href="https://yourdomain.com/cari-agen" class="footer-button">
+            <a href="/LatuaGroup/agen.php" class="footer-button">
                 <i class="fas fa-users"></i>
                 <span>CARI AGEN</span>
                 <p>"Agen-agen kami akan membantu menemukan properti idaman anda"</p>

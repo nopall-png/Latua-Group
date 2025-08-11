@@ -63,9 +63,15 @@ session_start();
 
         .nav-buttons {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap; /* Pastikan tombol tetap di satu baris */
+            overflow-x: auto; /* Tambahkan scrolling horizontal jika tombol tidak muat */
             justify-content: center;
             gap: 8px;
+            white-space: nowrap; /* Pastikan teks tombol tidak membungkus */
+        }
+
+        .nav-buttons::-webkit-scrollbar {
+            display: none; /* Sembunyikan scrollbar untuk tampilan bersih */
         }
 
         .nav-button {
@@ -86,6 +92,34 @@ session_start();
         }
 
         /* Responsif */
+        @media (max-width: 768px) {
+            .header {
+                padding: 8px 10px;
+            }
+
+            .logo img {
+                height: 200px; /* Kurangi ukuran logo di mobile */
+            }
+
+            .contact-info .email {
+                font-size: 12px;
+            }
+
+            .social-media a {
+                font-size: 14px;
+                margin: 0 6px;
+            }
+
+            .nav-buttons {
+                gap: 6px; /* Kurangi jarak antar tombol di mobile */
+            }
+
+            .nav-button {
+                padding: 6px 12px; /* Kurangi padding di mobile */
+                font-size: 11px; /* Kurangi ukuran font di mobile */
+            }
+        }
+
         @media (min-width: 768px) {
             .header {
                 padding: 15px 30px;

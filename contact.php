@@ -13,8 +13,8 @@
     :root {
         --brand-purple: #793475;
         --brand-purple-dark: #5a2658;
-        --brand-green: #4CAF50;
-        --brand-green-dark: #45A049;
+        --brand-green: #28a745; /* Warna hijau yang lebih standar */
+        --brand-green-dark: #218838;
         --text-color-light: #fff;
         --text-color-dark: #333;
         --text-color-muted: #666;
@@ -49,68 +49,20 @@
         -webkit-backdrop-filter: blur(10.5px);
         border: 1px solid rgba(255, 255, 255, 0.3);
         z-index: 5;
-        padding-top: 50px;
-        padding-bottom: 50px;
+        padding: 50px 20px; /* Padding disesuaikan */
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
     }
-
-    .hero-content-contact {
-        position: relative;
-        z-index: 10;
-        color: var(--text-color-light);
-        max-width: 700px;
-        margin: 0 auto;
-        text-align: center;
-    }
-
-    .hero-title-contact {
-        font-family: 'Inter', sans-serif;
-        font-size: 3.5rem;
-        font-weight: 800;
-        color: var(--text-color-light);
-        margin-bottom: 5px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    }
     
-    .hero-separator {
-        width: 60px;
-        height: 4px;
-        background-color: var(--text-color-light);
-        margin: 10px auto 20px auto;
-        border-radius: 2px;
-    }
-
-    .hero-description-contact {
-        font-size: 1rem;
-        font-weight: 500;
-        line-height: 1.6;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 40px;
-    }
-
-    .btn-hubungi-kami {
-        padding: 15px 30px;
-        background-color: var(--brand-purple);
-        color: var(--text-color-light);
-        font-weight: 600;
-        text-decoration: none;
-        border-radius: 8px;
-        transition: background-color 0.3s ease;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-    .btn-hubungi-kami:hover {
-        background-color: var(--brand-purple-dark);
-    }
-    
-    /* --- MODAL STYLING --- */
+    /* MODAL STYLING */
     .modal-content-custom {
         border-radius: 15px;
         padding: 30px;
         text-align: center;
         border: none;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     }
     
     .modal-title-custom {
@@ -131,23 +83,27 @@
     .modal-contact-text {
         font-size: 1rem;
         color: var(--text-color-dark);
+        margin-top: 15px;
     }
     
     .modal-button {
         width: 100%;
-        max-width: 250px;
+        max-width: 300px; /* Lebar maksimal tombol */
         padding: 12px 20px;
         border: none;
-        border-radius: 25px;
+        border-radius: 50px; /* Bentuk kapsul */
         color: var(--text-color-light);
         font-weight: 600;
         text-decoration: none;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .modal-button:hover {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     
@@ -169,19 +125,23 @@
         margin-right: 10px;
     }
 
-    /* --- RESPONSIVITAS --- */
+    /* RESPONSIVITAS */
     @media (max-width: 768px) {
         .hero-title-contact {
             font-size: 2.5rem;
         }
         
-        .hero-glass-effect {
-            padding: 30px 15px;
-        }
-
         .hero-description-contact {
             font-size: 0.9rem;
             padding: 0 25px;
+        }
+
+        .modal-title-custom {
+            font-size: 1.5rem;
+        }
+        
+        .modal-contact-text {
+            font-size: 0.9rem;
         }
     }
 </style>
@@ -189,7 +149,16 @@
 <div class="contact-page-wrapper">
     <div class="hero-section-contact">
         <div class="hero-glass-effect">
-            <!-- Menghilangkan hero-content dan button -->
+            <div class="hero-content-contact text-center">
+                <h1 class="hero-title-contact">Hubungi Kami</h1>
+                <div class="hero-separator"></div>
+                <p class="hero-description-contact">
+                    Kami siap membantu Anda. Silakan pilih salah satu metode di bawah ini untuk menghubungi tim kami.
+                </p>
+                <button type="button" class="btn btn-hubungi-kami" data-bs-toggle="modal" data-bs-target="#contactModal">
+                    HUBUNGI KAMI
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -203,20 +172,20 @@
             </div>
             <div class="modal-body modal-body-custom">
                 <h5 class="modal-title-custom" id="contactModalLabel">Hubungi kami di:</h5>
-                <a href="tel:0214705662" class="modal-button btn-purple d-flex justify-content-center align-items-center">
+                <a href="tel:0214705662" class="modal-button btn-purple">
                     <i class="fas fa-phone"></i> 021 470 5662
                 </a>
-                <a href="tel:08111952667" class="modal-button btn-purple d-flex justify-content-center align-items-center">
+                <a href="tel:08111952667" class="modal-button btn-purple">
                     <i class="fas fa-phone"></i> 0811 1952 667
                 </a>
 
                 <p class="modal-contact-text">atau kontak kami via email</p>
-                <a href="mailto:bekasi.asiaone@gmail.com" class="modal-button btn-purple d-flex justify-content-center align-items-center">
+                <a href="mailto:bekasi.asiaone@gmail.com" class="modal-button btn-purple">
                     <i class="fas fa-envelope"></i> Hubungi Kami
                 </a>
 
                 <p class="modal-contact-text">atau chat dengan kami via whatsapp</p>
-                <a href="https://wa.me/628170888820" class="modal-button btn-green d-flex justify-content-center align-items-center">
+                <a href="https://wa.me/628170888820" class="modal-button btn-green">
                     <i class="fab fa-whatsapp"></i> Hubungi Kami
                 </a>
                 <span style="font-size: 14px; color: #4CAF50; font-weight: bold; margin-top: 5px;">Online</span>

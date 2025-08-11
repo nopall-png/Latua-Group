@@ -279,6 +279,36 @@ $properties = $stmt->fetchAll();
         <?php endif; ?>
     </div>
 
+        <a href="https://wa.me/62123456789" class="whatsapp-chat">
+    <i class="fab fa-whatsapp"></i> Butuh bantuan? Chat dengan kami
+    </a>
+
+    <style>
+        /* WhatsApp Chat Button */
+        .whatsapp-chat {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25D366;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            text-decoration: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .whatsapp-chat i {
+            font-size: 24px;
+        }
+        .whatsapp-chat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+        }
+    </style>
+
     <?php if ($total_pages > 1): ?>
         <div class="pagination">
             <?php if ($current_page > 1): ?>

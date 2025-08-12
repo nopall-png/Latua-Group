@@ -1,67 +1,4 @@
 <?php
-// Tentukan email admin yang akan menerima pesan
-$to_email = "latuealand@gmail.com"; // Ganti dengan alamat email admin Anda
-
-// Sertakan koneksi database
-include 'includes/db_connect.php';
-
-// --- Perbaikan Utama di sini: Logika pemrosesan formulir ---
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $response = ['status' => 'error', 'message' => 'Terjadi kesalahan tidak terduga.'];
-
-    $nama_lengkap = trim($_POST['nama_lengkap'] ?? '');
-    $alamat_email = trim($_POST['alamat_email'] ?? '');
-    $nomor_handphone = trim($_POST['nomor_handphone'] ?? '');
-    $metode_kontak = $_POST['metode_kontak'] ?? 'Email';
-    $perihal = $_POST['perihal'] ?? '';
-    $status_properti = $_POST['status_properti'] ?? '';
-    $detail_properti = trim($_POST['detail_properti'] ?? '');
-
-    // Validasi dasar
-    if (empty($nama_lengkap) || empty($alamat_email) || empty($nomor_handphone) || empty($perihal) || empty($status_properti)) {
-        $response['message'] = 'Semua kolom yang ditandai * wajib diisi.';
-    } elseif (!filter_var($alamat_email, FILTER_VALIDATE_EMAIL)) {
-        $response['message'] = 'Format alamat email tidak valid.';
-    } else {
-        try {
-            // Persiapkan dan jalankan statement PDO untuk menyimpan data
-            $stmt = $pdo->prepare("INSERT INTO pending_properties (user_name, user_email, user_phone, perihal, status_properti, detail_properti, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([$nama_lengkap, $alamat_email, $nomor_handphone, $perihal, $status_properti, $detail_properti]);
-
-            // Buat subjek dan isi email
-            $subject = "Pesan dari Formulir Hubungi Kami: " . $perihal;
-            $email_content = "Nama Lengkap: " . $nama_lengkap . "\n";
-            $email_content .= "Alamat Email: " . $alamat_email . "\n";
-            $email_content .= "Nomor Handphone: " . $nomor_handphone . "\n";
-            $email_content .= "Metode Kontak Pilihan: " . $metode_kontak . "\n";
-            $email_content .= "Perihal: " . $perihal . "\n";
-            $email_content .= "Status Properti: " . $status_properti . "\n";
-            $email_content .= "Detail Properti: \n" . $detail_properti . "\n";
-
-            // Atur header email
-            $email_headers = "From: " . $nama_lengkap . " <" . $alamat_email . ">\r\n";
-            $email_headers .= "Reply-To: " . $alamat_email . "\r\n";
-            $email_headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-
-            // Kirim email
-            if (mail($to_email, $subject, $email_content, $email_headers)) {
-                $response = ['status' => 'success', 'message' => 'Formulir Anda telah berhasil dikirim! Tim kami akan segera menghubungi Anda.'];
-            } else {
-                $response = ['status' => 'success', 'message' => 'Formulir Anda telah berhasil dikirim ke database! Namun, email notifikasi gagal terkirim. Tim kami tetap akan memprosesnya.'];
-            }
-        } catch (PDOException $e) {
-            $response['message'] = 'Error menyimpan pengajuan ke database: ' . $e->getMessage();
-            error_log("Database Error: " . $e->getMessage()); // Log error untuk debugging
-        }
-    }
-
-    // Kirim respons JSON
-    header('Content-Type: application/json');
-    echo json_encode($response);
-    exit();
-}
-
-// Sertakan header
 include 'includes/header.php';
 ?>
 
@@ -234,7 +171,7 @@ include 'includes/header.php';
     }
     
     .alert-success::before {
-        content: "✔"; /* Tanda centang */
+        content: "✔";
         font-size: 18px;
         color: #155724;
     }
@@ -246,12 +183,11 @@ include 'includes/header.php';
     }
     
     .alert-danger::before {
-        content: "✘"; /* Tanda silang */
+        content: "✘";
         font-size: 18px;
         color: #721C24;
     }
     
-    /* WhatsApp Chat Button */
     .whatsapp-chat {
         position: fixed;
         bottom: 20px;
@@ -278,7 +214,6 @@ include 'includes/header.php';
         box-shadow: 0 6px 20px rgba(16, 198, 90, 0.6);
     }
     
-    /* Footer Styling */
     footer {
         background-color: #2c3e50;
         color: white;
@@ -291,7 +226,6 @@ include 'includes/header.php';
         font-size: 14px;
     }
     
-    /* Responsive Design */
     @media (max-width: 768px) {
         body {
             min-height: auto;
@@ -390,43 +324,45 @@ include 'includes/header.php';
 
 <script>
     document.getElementById('contact-form').addEventListener('submit', function(e) {
-        e.preventDefault(); // Mencegah reload halaman
+        e.preventDefault();
 
         const formData = new FormData(this);
 
-        fetch(window.location.href, {
+        fetch('/LatuaGroup/process_contact.php', {
             method: 'POST',
             body: formData
         })
         .then(response => {
+            console.log('Status:', response.status);
+            console.log('Headers:', response.headers.get('content-type'));
             if (!response.ok) {
                 return response.text().then(text => {
+                    console.error('Response text:', text);
                     throw new Error(text || 'Terjadi kesalahan pada server.');
                 });
             }
             return response.json();
         })
         .then(data => {
-            console.log('Response data:', data); // Debug: Cek data yang diterima
+            console.log('Response data:', data);
             const messageBox = document.getElementById('message');
-            messageBox.innerHTML = ''; // Bersihkan pesan sebelumnya
+            messageBox.innerHTML = '';
             if (data.status === 'success') {
                 messageBox.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-                this.reset(); // Reset form setelah sukses
-                // Tambahkan konfirmasi visual dengan delay sebelum menghilang
+                this.reset();
                 setTimeout(() => {
                     messageBox.innerHTML = '<div class="alert alert-success">Pengajuan Anda telah diproses. Terima kasih!</div>';
                     setTimeout(() => {
-                        messageBox.innerHTML = ''; // Hilangkan pesan setelah beberapa detik
-                    }, 5000); // Hilang setelah 5 detik
-                }, 3000); // Tunggu 3 detik sebelum ubah pesan
+                        messageBox.innerHTML = '';
+                    }, 5000);
+                }, 3000);
             } else {
                 messageBox.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
             }
             messageBox.scrollIntoView({ behavior: 'smooth' });
         })
         .catch(error => {
-            console.error('Error:', error); // Log error untuk debugging
+            console.error('Error:', error);
             const messageBox = document.getElementById('message');
             messageBox.innerHTML = `<div class="alert alert-danger">Terjadi kesalahan saat mengirim data. Silakan coba lagi atau hubungi dukungan.</div>`;
             messageBox.scrollIntoView({ behavior: 'smooth' });
@@ -435,6 +371,5 @@ include 'includes/header.php';
 </script>
 
 <?php
-// Sertakan footer sebagai elemen terpisah
 include 'includes/footer.php';
 ?>

@@ -72,8 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['image']) && $_FILES[
     $response['error'] = $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE ? 'Tidak ada file yang diunggah.' : 'Kesalahan upload: ' . $_FILES['image']['error'];
 }
 
-// Handle image deletion (GET with action=delete)
-elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id']) && is_numeric($_GET['id'])) {
+// Handle deletion of temporary images (GET with action=delete_temp)
+elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete_temp' && isset($_GET['id']) && is_numeric($_GET['id'])) {
     $image_id = intval($_GET['id']);
     try {
         $stmt = $pdo->prepare("SELECT image_path FROM property_images_temp WHERE id = ?");
@@ -86,6 +86,31 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET[
                 $response['error'] = 'Gagal menghapus file dari server.';
             } else {
                 $stmt = $pdo->prepare("DELETE FROM property_images_temp WHERE id = ?");
+                $stmt->execute([$image_id]);
+                $response['success'] = true;
+            }
+        } else {
+            $response['error'] = 'Gambar tidak ditemukan.';
+        }
+    } catch (PDOException $e) {
+        $response['error'] = 'Error menghapus gambar: ' . $e->getMessage();
+    }
+}
+
+// Handle deletion of existing images (GET with action=delete_existing)
+elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete_existing' && isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $image_id = intval($_GET['id']);
+    try {
+        $stmt = $pdo->prepare("SELECT image_path FROM property_images WHERE id = ?");
+        $stmt->execute([$image_id]);
+        $image = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($image) {
+            $file_path = '../Uploads/' . $image['image_path'];
+            if (file_exists($file_path) && !unlink($file_path)) {
+                $response['error'] = 'Gagal menghapus file dari server.';
+            } else {
+                $stmt = $pdo->prepare("DELETE FROM property_images WHERE id = ?");
                 $stmt->execute([$image_id]);
                 $response['success'] = true;
             }

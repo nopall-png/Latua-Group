@@ -298,8 +298,9 @@ require_once '../includes/header.php';
         <?php else: ?>
             <div class="current-images-grid">
                 <?php foreach ($images as $image): ?>
-                    <div class="current-image-item">
+                    <div class="current-image-item" data-image-id="<?php echo htmlspecialchars($image['id']); ?>">
                         <img src="../Uploads/<?php echo htmlspecialchars($image['image_path']); ?>?t=<?php echo time(); ?>" alt="Property Image">
+                        <a class="delete-image-btn" title="Hapus gambar" onclick="deleteExistingImage(<?php echo htmlspecialchars($image['id']); ?>, this)">X</a>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -398,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             deleteBtn.onclick = function(e) {
                                 e.preventDefault();
                                 if (confirm('Hapus gambar ini?')) {
-                                    fetch('upload_image_ajax.php?action=delete&id=' + response.image_id)
+                                    fetch('upload_image_ajax.php?action=delete_temp&id=' + response.image_id)
                                         .then(res => res.json())
                                         .then(data => {
                                             if (data.success) {
@@ -440,6 +441,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const ids = Object.keys(imageIdMap).filter(id => imageIdMap[id]).join(',');
         uploadedImageIdsInput.value = ids;
     }
+
+    window.deleteExistingImage = function(imageId, element) {
+        if (confirm('Hapus gambar ini?')) {
+            fetch('upload_image_ajax.php?action=delete_existing&id=' + imageId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        element.closest('.current-image-item').remove();
+                        currentImageCount--;
+                        imageUploadMessage.textContent = `Gambar dihapus. Sisa slot: ${maxImages - currentImageCount}.`;
+                    } else {
+                        imageUploadMessage.textContent = 'Gagal menghapus gambar: ' + data.error;
+                    }
+                })
+                .catch(err => {
+                    imageUploadMessage.textContent = 'Terjadi kesalahan saat menghapus gambar.';
+                });
+        }
+    };
 });
 </script>
 

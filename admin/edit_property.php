@@ -1,337 +1,318 @@
 <?php
-include '../includes/db_connect.php';
-include '../includes/header.php';
+ob_start();
+session_start();
+require_once '../includes/db_connect.php';
 
 if (!isset($_SESSION['user_id'])) {
+    $_SESSION['error_message'] = "<span class='error-message'>Silakan login untuk mengedit properti.</span>";
     header('Location: ../auth/login.php');
     exit();
 }
 
-// Pastikan ada ID properti yang akan diedit
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    echo "<div class='admin-container'><p class='error-message'>ID Properti tidak valid.</p></div>";
-    include '../includes/footer.php';
+    $_SESSION['property_message'] = "<span class='error-message'>ID properti tidak valid.</span>";
+    header('Location: index.php');
     exit();
 }
 
-$property_id = $_GET['id'];
-$upload_messages = [];
+$property_id = intval($_GET['id']);
 
-// Proses form submission (UPDATE data)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = $_POST['title'];
-    $description = $_POST['description'];
-    // Sanitasi input harga: hapus titik dan ubah koma menjadi titik untuk parsing
-    $price_input = str_replace(['.', ','], ['', '.'], $_POST['price']);
-    $price = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT, ['options' => ['default' => null]]);
-    if ($price === false || $price === null || $price < 0 || $price > 99999999.99) {
-        $upload_messages[] = "<span class='error-message'>Harga tidak valid. Harap masukkan angka positif hingga Rp 99.999.999,99.</span>";
-        $stmt_fetch = $pdo->prepare("SELECT price FROM properties WHERE id = ?");
-        $stmt_fetch->execute([$property_id]);
-        $price = $stmt_fetch->fetchColumn(); // Fallback to existing price
+try {
+    $stmt = $pdo->prepare("SELECT * FROM properties WHERE id = ?");
+    $stmt->execute([$property_id]);
+    $property = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$property) {
+        $_SESSION['property_message'] = "<span class='error-message'>Properti tidak ditemukan.</span>";
+        header('Location: index.php');
+        exit();
     }
-    $property_type = $_POST['property_type'];
-    $id_properti = $_POST['id_properti'];
-    $tipe_properti = $_POST['tipe_properti'];
-    $luas_tanah = $_POST['luas_tanah'];
-    $luas_bangunan = $_POST['luas_bangunan'];
-    $arah_bangunan = $_POST['arah_bangunan'];
-    $jenis_bangunan = $_POST['jenis_bangunan'];
-    $jumlah_lantai = $_POST['jumlah_lantai'];
-    $kamar_tidur = $_POST['kamar_tidur'];
-    $kamar_pembantu = $_POST['kamar_pembantu'];
-    $kamar_mandi = $_POST['kamar_mandi'];
-    $daya_listrik = $_POST['daya_listrik'];
-    $saluran_air = $_POST['saluran_air'];
-    $jalur_telepon = $_POST['jalur_telepon'];
-    $interior = $_POST['interior'];
-    $garasi_parkir = $_POST['garasi_parkir'];
-    $sertifikat = $_POST['sertifikat'];
-    $view_count = $_POST['view_count'];
-    $province = $_POST['province'] ?? '';
-    $regency = $_POST['regency'] ?? '';
-    $district_or_area = $_POST['district_or_area'] ?? '';
-    $agent_id = !empty($_POST['agent_id']) && is_numeric($_POST['agent_id']) ? $_POST['agent_id'] : null;
+} catch (PDOException $e) {
+    $_SESSION['property_message'] = "<span class='error-message'>Error mengambil data properti: " . $e->getMessage() . "</span>";
+    header('Location: index.php');
+    exit();
+}
 
-    try {
-        $stmt = $pdo->prepare("UPDATE properties SET
-            title = ?, description = ?, price = ?, property_type = ?,
-            id_properti = ?, tipe_properti = ?, luas_tanah = ?, luas_bangunan = ?, arah_bangunan = ?,
-            jenis_bangunan = ?, jumlah_lantai = ?, kamar_tidur = ?, kamar_pembantu = ?, kamar_mandi = ?,
-            daya_listrik = ?, saluran_air = ?, jalur_telepon = ?, interior = ?, garasi_parkir = ?,
-            sertifikat = ?, view_count = ?,
-            province = ?, regency = ?, district_or_area = ?, agent_id = ?
-            WHERE id = ?");
+try {
+    $stmt = $pdo->prepare("SELECT id, image_path FROM property_images WHERE property_id = ?");
+    $stmt->execute([$property_id]);
+    $images = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+} catch (PDOException $e) {
+    $images = [];
+    error_log("Error fetching images for property_id $property_id: " . $e->getMessage());
+}
 
-        $params = [
-            $title, $description, $price, $property_type,
-            $id_properti, $tipe_properti, $luas_tanah, $luas_bangunan, $arah_bangunan,
-            $jenis_bangunan, $jumlah_lantai, $kamar_tidur, $kamar_pembantu, $kamar_mandi,
-            $daya_listrik, $saluran_air, $jalur_telepon, $interior, $garasi_parkir,
-            $sertifikat, $view_count,
-            $province, $regency, $district_or_area, $agent_id,
-            $property_id
+$upload_messages = [];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_property'])) {
+    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+        $upload_messages[] = "<span class='error-message'>Token keamanan tidak valid.</span>";
+    } else {
+        $required_fields = [
+            'title' => 'Judul Properti',
+            'id_properti' => 'ID Properti',
+            'property_type' => 'Tipe Penawaran',
+            'tipe_properti' => 'Tipe Properti',
+            'province' => 'Provinsi',
+            'regency' => 'Kota/Kabupaten',
+            'price' => 'Harga',
+            'description' => 'Deskripsi'
         ];
 
-        error_log("Updating property ID $property_id with price: $price");
-        $stmt->execute($params);
-        $upload_messages[] = "<span class='success-message'>Properti berhasil diperbarui!</span>";
-        header("Location: ../index.php?updated=" . time());
-        exit();
-    } catch (PDOException $e) {
-        $upload_messages[] = "<span class='error-message'>Error memperbarui properti: " . $e->getMessage() . "</span>";
-        error_log("Error updating property: " . $e->getMessage());
-    }
-
-    // Handle multiple image uploads
-    if (isset($_FILES['images']['name']) && is_array($_FILES['images']['name']) && !empty(array_filter($_FILES['images']['name']))) {
-        $target_dir = "../Uploads/";
-        if (!is_dir($target_dir)) {
-            mkdir($target_dir, 0755, true);
-        }
-
-        $uploaded_count = 0;
-        $max_files_to_add = 5;
-
-        $stmt_count_current_images = $pdo->prepare("SELECT COUNT(*) FROM property_images WHERE property_id = ?");
-        $stmt_count_current_images->execute([$property_id]);
-        $current_image_count = $stmt_count_current_images->fetchColumn();
-
-        foreach ($_FILES['images']['name'] as $key => $name) {
-            if (!empty($name) && $_FILES['images']['error'][$key] == UPLOAD_ERR_OK) {
-                if (($current_image_count + $uploaded_count) >= $max_files_to_add) {
-                    $upload_messages[] = "<span style='color: orange;'>Maksimal total 5 gambar untuk properti ini. Beberapa gambar baru dilewati.</span>";
-                    break;
-                }
-
-                $tmp_name = $_FILES['images']['tmp_name'][$key];
-                $file_extension = pathinfo($name, PATHINFO_EXTENSION);
-                $new_file_name = uniqid('img_', true) . '.' . $file_extension;
-                $upload_path = $target_dir . $new_file_name;
-
-                if (move_uploaded_file($tmp_name, $upload_path)) {
-                    $img_stmt = $pdo->prepare("INSERT INTO property_images (property_id, image_path) VALUES (?, ?)");
-                    $img_stmt->execute([$property_id, $new_file_name]);
-                    $uploaded_count++;
-                } else {
-                    $upload_messages[] = "<span class='error-message'>Gagal memindahkan file upload: " . htmlspecialchars($name) . "</span>";
-                }
-            } elseif ($_FILES['images']['error'][$key] != UPLOAD_ERR_NO_FILE) {
-                $upload_messages[] = "<span class='error-message'>Error upload " . htmlspecialchars($name) . ": " . $_FILES['images']['error'][$key] . "</span>";
+        foreach ($required_fields as $field => $label) {
+            if (empty($_POST[$field])) {
+                $upload_messages[] = "<span class='error-message'>$label wajib diisi.</span>";
             }
         }
-        if ($uploaded_count > 0) {
-            $upload_messages[] = "<span class='success-message'>Berhasil mengunggah " . $uploaded_count . " gambar baru.</span>";
-        }
-    }
-}
 
-// Ambil data properti
-$stmt_fetch = $pdo->prepare("SELECT * FROM properties WHERE id = ?");
-$stmt_fetch->execute([$property_id]);
-$property = $stmt_fetch->fetch();
+        if (empty($upload_messages)) {
+            $title = trim($_POST['title']);
+            $description = trim($_POST['description']);
+            $price = floatval($_POST['price']);
+            $property_type = $_POST['property_type'];
+            $id_properti = trim($_POST['id_properti']);
+            $tipe_properti = $_POST['tipe_properti'];
+            $luas_tanah = !empty($_POST['luas_tanah']) ? trim($_POST['luas_tanah']) : null;
+            $luas_bangunan = !empty($_POST['luas_bangunan']) ? trim($_POST['luas_bangunan']) : null;
+            $arah_bangunan = !empty($_POST['arah_bangunan']) ? trim($_POST['arah_bangunan']) : null;
+            $jenis_bangunan = !empty($_POST['jenis_bangunan']) ? trim($_POST['jenis_bangunan']) : null;
+            $jumlah_lantai = !empty($_POST['jumlah_lantai']) ? trim($_POST['jumlah_lantai']) : null;
+            $kamar_tidur = !empty($_POST['kamar_tidur']) ? trim($_POST['kamar_tidur']) : null;
+            $kamar_pembantu = !empty($_POST['kamar_pembantu']) ? trim($_POST['kamar_pembantu']) : null;
+            $kamar_mandi = !empty($_POST['kamar_mandi']) ? trim($_POST['kamar_mandi']) : null;
+            $daya_listrik = !empty($_POST['daya_listrik']) ? trim($_POST['daya_listrik']) : null;
+            $saluran_air = !empty($_POST['saluran_air']) ? trim($_POST['saluran_air']) : null;
+            $jalur_telepon = !empty($_POST['jalur_telepon']) ? trim($_POST['jalur_telepon']) : null;
+            $interior = !empty($_POST['interior']) ? trim($_POST['interior']) : null;
+            $garasi_parkir = !empty($_POST['garasi_parkir']) ? trim($_POST['garasi_parkir']) : null;
+            $sertifikat = !empty($_POST['sertifikat']) ? trim($_POST['sertifikat']) : null;
+            $province = trim($_POST['province']);
+            $regency = trim($_POST['regency']);
+            $district_or_area = !empty($_POST['district_or_area']) ? trim($_POST['district_or_area']) : null;
+            $agent_id = !empty($_POST['agent_id']) && is_numeric($_POST['agent_id']) ? intval($_POST['agent_id']) : null;
+            $facilities = !empty($_POST['facilities']) ? trim($_POST['facilities']) : null;
 
-if (!$property) {
-    echo "<div class='admin-container'><p class='error-message'>Properti tidak ditemukan untuk diedit.</p></div>";
-    include '../includes/footer.php';
-    exit();
-}
+            $uploaded_image_ids_str = $_POST['uploaded_image_ids'] ?? '';
+            $uploaded_image_ids = array_filter(explode(',', $uploaded_image_ids_str), 'is_numeric');
 
-// Ambil gambar properti
-$stmt_current_images = $pdo->prepare("SELECT id, image_path FROM property_images WHERE property_id = ? ORDER BY id ASC");
-$stmt_current_images->execute([$property_id]);
-$current_images = $stmt_current_images->fetchAll();
+            try {
+                $pdo->beginTransaction();
 
-// Proses penghapusan gambar
-if (isset($_GET['delete_image_id']) && is_numeric($_GET['delete_image_id'])) {
-    $delete_image_id = $_GET['delete_image_id'];
-    $stmt_get_image_path = $pdo->prepare("SELECT image_path FROM property_images WHERE id = ? AND property_id = ?");
-    $stmt_get_image_path->execute([$delete_image_id, $property_id]);
-    $image_to_delete = $stmt_get_image_path->fetchColumn();
+                $stmt = $pdo->prepare("UPDATE properties SET
+                    id_properti = ?, title = ?, description = ?, price = ?, province = ?, regency = ?, district_or_area = ?,
+                    property_type = ?, tipe_properti = ?, luas_tanah = ?, luas_bangunan = ?, arah_bangunan = ?,
+                    jenis_bangunan = ?, jumlah_lantai = ?, kamar_tidur = ?, kamar_pembantu = ?, kamar_mandi = ?,
+                    daya_listrik = ?, saluran_air = ?, jalur_telepon = ?, interior = ?, garasi_parkir = ?, sertifikat = ?,
+                    agent_id = ?, facilities = ? WHERE id = ?");
+                $stmt->execute([
+                    $id_properti, $title, $description, $price, $province, $regency, $district_or_area,
+                    $property_type, $tipe_properti, $luas_tanah, $luas_bangunan, $arah_bangunan,
+                    $jenis_bangunan, $jumlah_lantai, $kamar_tidur, $kamar_pembantu, $kamar_mandi,
+                    $daya_listrik, $saluran_air, $jalur_telepon, $interior, $garasi_parkir, $sertifikat,
+                    $agent_id, $facilities, $property_id
+                ]);
 
-    if ($image_to_delete) {
-        try {
-            $stmt_delete_image = $pdo->prepare("DELETE FROM property_images WHERE id = ?");
-            $stmt_delete_image->execute([$delete_image_id]);
-            $file_path = '../Uploads/' . $image_to_delete;
-            if (file_exists($file_path)) {
-                unlink($file_path);
+                $image_insert_count = 0;
+                if (!empty($uploaded_image_ids)) {
+                    error_log("Moving images for property_id: $property_id, image_ids: " . implode(',', $uploaded_image_ids));
+                    $placeholders = str_repeat('?,', count($uploaded_image_ids) - 1) . '?';
+                    $stmt = $pdo->prepare("SELECT id, image_path FROM property_images_temp WHERE id IN ($placeholders)");
+                    $stmt->execute($uploaded_image_ids);
+                    $temp_images = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    if ($temp_images) {
+                        $stmt_insert = $pdo->prepare("INSERT INTO property_images (property_id, image_path) VALUES (?, ?)");
+                        foreach ($temp_images as $image) {
+                            $source_path = '../Uploads/' . $image['image_path'];
+                            if (file_exists($source_path) && getimagesize($source_path)) {
+                                $stmt_insert->execute([$property_id, $image['image_path']]);
+                                $image_insert_count++;
+                            } else {
+                                error_log("Invalid or missing image: $source_path");
+                                $upload_messages[] = "<span class='error-message'>Gambar ID {$image['id']} tidak valid atau tidak ditemukan.</span>";
+                            }
+                        }
+                        $stmt_delete = $pdo->prepare("DELETE FROM property_images_temp WHERE id IN ($placeholders)");
+                        $stmt_delete->execute($uploaded_image_ids);
+                    } else {
+                        $upload_messages[] = "<span class='error-message'>Tidak ada gambar di tabel sementara untuk ID: " . implode(',', $uploaded_image_ids) . "</span>";
+                    }
+                }
+
+                $pdo->commit();
+                $upload_messages[] = "<span class='success-message'>Properti berhasil diperbarui dengan $image_insert_count gambar baru!</span>";
+                $_SESSION['property_messages'] = $upload_messages;
+                header('Location: index.php');
+                exit();
+            } catch (PDOException $e) {
+                $pdo->rollBack();
+                $upload_messages[] = "<span class='error-message'>Error memperbarui properti: " . $e->getMessage() . "</span>";
             }
-            $upload_messages[] = "<span class='success-message'>Gambar berhasil dihapus.</span>";
-            header("Location: edit_property.php?id=" . $property_id . "&msg=" . urlencode(strip_tags($upload_messages[count($upload_messages)-1])));
-            exit();
-        } catch (PDOException $e) {
-            $upload_messages[] = "<span class='error-message'>Error menghapus gambar: " . $e->getMessage() . "</span>";
         }
-    } else {
-        $upload_messages[] = "<span class='error-message'>Gambar tidak ditemukan atau bukan milik properti ini.</span>";
     }
+    $_SESSION['property_messages'] = $upload_messages;
 }
 
-// Daftar Tipe Properti
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+$provinces = $pdo->query("SELECT id, name FROM provinces ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC) ?: [];
+$regencies_data_js = [];
+$stmt = $pdo->query("SELECT p.name AS province_name, r.name AS regency_name FROM regencies r JOIN provinces p ON r.province_id = p.id ORDER BY p.name, r.name");
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $regencies_data_js[$row['province_name']][] = $row['regency_name'];
+}
+$agents = $pdo->query("SELECT id, name FROM agents ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
 $property_types = [
     "Apartemen", "Condotel", "Gedung", "Gudang", "Hotel", "Kantor",
     "Kavling", "Kios", "Komersial", "Kost", "Pabrik", "Ruang Usaha",
     "Ruko", "Rumah", "Rumah Kost", "Tanah"
 ];
 
-// Ambil daftar provinsi
-$provinces_stmt = $pdo->query("SELECT id, name FROM provinces ORDER BY name ASC");
-$provinces = $provinces_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Ambil daftar kota/kabupaten
-$regencies_data_js = [];
-$regencies_stmt = $pdo->query("SELECT p.name AS province_name, r.name AS regency_name FROM regencies r JOIN provinces p ON r.province_id = p.id ORDER BY p.name, r.name ASC");
-while($row = $regencies_stmt->fetch(PDO::FETCH_ASSOC)) {
-    $regencies_data_js[$row['province_name']][] = $row['regency_name'];
-}
-
-// Ambil daftar agen
-$stmt_agents = $pdo->query("SELECT id, name FROM agents ORDER BY name ASC");
-$agents = $stmt_agents->fetchAll(PDO::FETCH_ASSOC);
-
-// Format harga ke Rupiah untuk input
-$formatted_price = number_format($property['price'], 2, ',', '.');
+require_once '../includes/header.php';
 ?>
 
+<style>
+    .admin-container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    h2 { color: #333; font-size: 24px; margin-bottom: 15px; }
+    h3 { color: #334894; font-size: 18px; margin: 20px 0 10px; }
+    form label { display: block; margin: 10px 0 5px; font-weight: 600; }
+    form input, form textarea, form select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
+    form textarea { resize: vertical; min-height: 100px; }
+    form button { background-color: #334894; color: #fff; padding: 10px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; }
+    form button:hover { background-color: #4a5fb3; }
+    .success-message { color: #28a745; background-color: #e9fce9; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+    .error-message { color: #dc3545; background-color: #fce9e9; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+    .current-images-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .current-image-item { position: relative; width: 100px; height: 100px; }
+    .current-image-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+    .current-image-item.loading img { opacity: 0.5; }
+    .upload-progress { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 3px; }
+    .delete-image-btn { position: absolute; top: 5px; right: 5px; color: #dc3545; font-weight: bold; cursor: pointer; }
+    small { color: #666; font-size: 0.9em; }
+</style>
+
 <div class="admin-container">
-    <h2>Edit Properti: <?php echo htmlspecialchars($property['title']); ?></h2>
-
-    <?php foreach ($upload_messages as $msg): ?>
-        <p><?php echo $msg; ?></p>
-    <?php endforeach; ?>
-
+    <h2>Edit Properti</h2>
+    <?php if (isset($_SESSION['property_messages'])): ?>
+        <?php foreach ($_SESSION['property_messages'] as $msg): ?>
+            <p><?php echo $msg; ?></p>
+        <?php endforeach; ?>
+        <?php unset($_SESSION['property_messages']); ?>
+    <?php endif; ?>
     <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="edit_property" value="1">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+
+        <h3>Detail Properti</h3>
         <label for="title">Judul Properti:</label>
         <input type="text" name="title" value="<?php echo htmlspecialchars($property['title']); ?>" required>
-
-        <label for="id_properti">ID Properti (Contoh: 118536):</label>
+        <label for="id_properti">ID Properti:</label>
         <input type="text" name="id_properti" value="<?php echo htmlspecialchars($property['id_properti']); ?>" required>
-
         <label for="property_type">Tipe Penawaran:</label>
         <select name="property_type" required>
-            <option value="for_sale" <?php echo ($property['property_type'] == 'for_sale') ? 'selected' : ''; ?>>For Sale</option>
-            <option value="for_rent" <?php echo ($property['property_type'] == 'for_rent') ? 'selected' : ''; ?>>For Rent</option>
+            <option value="for_sale" <?php echo $property['property_type'] == 'for_sale' ? 'selected' : ''; ?>>Dijual</option>
+            <option value="for_rent" <?php echo $property['property_type'] == 'for_rent' ? 'selected' : ''; ?>>Disewa</option>
         </select>
-
         <label for="tipe_properti">Tipe Properti:</label>
         <select name="tipe_properti" required>
             <option value="">Pilih Tipe Properti</option>
             <?php foreach ($property_types as $type): ?>
-                <option value="<?php echo htmlspecialchars($type); ?>" <?php echo ($property['tipe_properti'] == $type) ? 'selected' : ''; ?>><?php echo htmlspecialchars($type); ?></option>
+                <option value="<?php echo htmlspecialchars($type); ?>" <?php echo $property['tipe_properti'] == $type ? 'selected' : ''; ?>><?php echo htmlspecialchars($type); ?></option>
             <?php endforeach; ?>
         </select>
+        <label for="price">Harga (Rp):</label>
+        <input type="number" name="price" step="0.01" value="<?php echo htmlspecialchars($property['price']); ?>" required>
+        <label for="description">Deskripsi Properti:</label>
+        <textarea name="description" required><?php echo htmlspecialchars($property['description']); ?></textarea>
 
-        <h3>Lokasi Properti:</h3>
+        <h3>Spesifikasi Properti</h3>
+        <label for="luas_tanah">Luas Tanah (m²):</label>
+        <input type="number" name="luas_tanah" value="<?php echo htmlspecialchars($property['luas_tanah'] ?? ''); ?>">
+        <label for="luas_bangunan">Luas Bangunan (m²):</label>
+        <input type="number" name="luas_bangunan" value="<?php echo htmlspecialchars($property['luas_bangunan'] ?? ''); ?>">
+        <label for="arah_bangunan">Arah Bangunan:</label>
+        <input type="text" name="arah_bangunan" value="<?php echo htmlspecialchars($property['arah_bangunan'] ?? ''); ?>">
+        <label for="jenis_bangunan">Jenis Bangunan:</label>
+        <input type="text" name="jenis_bangunan" value="<?php echo htmlspecialchars($property['jenis_bangunan'] ?? ''); ?>">
+        <label for="jumlah_lantai">Jumlah Lantai:</label>
+        <input type="number" name="jumlah_lantai" value="<?php echo htmlspecialchars($property['jumlah_lantai'] ?? ''); ?>">
+        <label for="kamar_tidur">Kamar Tidur:</label>
+        <input type="number" name="kamar_tidur" value="<?php echo htmlspecialchars($property['kamar_tidur'] ?? ''); ?>">
+        <label for="kamar_pembantu">Kamar Pembantu:</label>
+        <input type="number" name="kamar_pembantu" value="<?php echo htmlspecialchars($property['kamar_pembantu'] ?? ''); ?>">
+        <label for="kamar_mandi">Kamar Mandi:</label>
+        <input type="number" name="kamar_mandi" value="<?php echo htmlspecialchars($property['kamar_mandi'] ?? ''); ?>">
+        <label for="daya_listrik">Daya Listrik (VA):</label>
+        <input type="number" name="daya_listrik" value="<?php echo htmlspecialchars($property['daya_listrik'] ?? ''); ?>">
+        <label for="saluran_air">Saluran Air:</label>
+        <input type="text" name="saluran_air" value="<?php echo htmlspecialchars($property['saluran_air'] ?? ''); ?>">
+        <label for="jalur_telepon">Jalur Telepon:</label>
+        <input type="text" name="jalur_telepon" value="<?php echo htmlspecialchars($property['jalur_telepon'] ?? ''); ?>">
+        <label for="interior">Interior:</label>
+        <input type="text" name="interior" value="<?php echo htmlspecialchars($property['interior'] ?? ''); ?>">
+        <label for="garasi_parkir">Garasi/Parkir:</label>
+        <input type="text" name="garasi_parkir" value="<?php echo htmlspecialchars($property['garasi_parkir'] ?? ''); ?>">
+        <label for="sertifikat">Sertifikat:</label>
+        <input type="text" name="sertifikat" value="<?php echo htmlspecialchars($property['sertifikat'] ?? ''); ?>">
+
+        <h3>Lokasi Properti</h3>
         <label for="province">Provinsi:</label>
         <select name="province" id="provinceSelect" required>
             <option value="">Pilih Provinsi</option>
             <?php foreach ($provinces as $province): ?>
-                <option value="<?php echo htmlspecialchars($province['name']); ?>" <?php echo ($property['province'] == $province['name']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($province['name']); ?></option>
+                <option value="<?php echo htmlspecialchars($province['name']); ?>" <?php echo $property['province'] == $province['name'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($province['name']); ?></option>
             <?php endforeach; ?>
         </select>
-
         <label for="regency">Kota/Kabupaten:</label>
-        <select name="regency" id="regencySelect" required <?php echo empty($property['province']) ? 'disabled' : ''; ?>>
+        <select name="regency" id="regencySelect" required>
             <option value="">Pilih Kota/Kabupaten</option>
-            <?php 
-            if (!empty($property['province']) && isset($regencies_data_js[$property['province']])) {
-                foreach ($regencies_data_js[$property['province']] as $regency): ?>
-                    <option value="<?php echo htmlspecialchars($regency); ?>" <?php echo ($property['regency'] == $regency) ? 'selected' : ''; ?>><?php echo htmlspecialchars($regency); ?></option>
-                <?php endforeach;
-            }
-            ?>
+            <?php if (isset($regencies_data_js[$property['province']])): ?>
+                <?php foreach ($regencies_data_js[$property['province']] as $regency): ?>
+                    <option value="<?php echo htmlspecialchars($regency); ?>" <?php echo $property['regency'] == $regency ? 'selected' : ''; ?>><?php echo htmlspecialchars($regency); ?></option>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </select>
+        <label for="district_or_area">Kecamatan/Area:</label>
+        <input type="text" name="district_or_area" value="<?php echo htmlspecialchars($property['district_or_area'] ?? ''); ?>">
+        <small>Isi dengan kecamatan atau area spesifik jika diperlukan.</small>
 
-        <label for="district_or_area">Kecamatan/Area Spesifik:</label>
-        <input type="text" name="district_or_area" placeholder="Kecamatan/Area (misal: Kemang, Menteng)" value="<?php echo htmlspecialchars($property['district_or_area']); ?>">
-        <small>Isi dengan kecamatan atau area yang lebih spesifik jika diperlukan.</small>
-
-        <label for="price">Harga (Rp):</label>
-        <input type="text" name="price" value="<?php echo htmlspecialchars($formatted_price); ?>" placeholder="Contoh: 100.000.000,00" required>
-        <small>Masukkan harga dalam format Rupiah (misal: 100.000.000,00). Maksimum Rp 99.999.999,99.</small>
-
-        <label for="description">Deskripsi Properti:</label>
-        <textarea name="description" required><?php echo htmlspecialchars($property['description']); ?></textarea>
-
-        <h3>Pilih Agen Penanggung Jawab:</h3>
+        <h3>Pilih Agen</h3>
         <label for="agent_id">Agen:</label>
         <select name="agent_id" id="agent_id">
             <option value="">-- Pilih Agen (Opsional) --</option>
             <?php foreach ($agents as $agent): ?>
-                <option value="<?php echo htmlspecialchars($agent['id']); ?>" <?php echo ($property['agent_id'] == $agent['id']) ? 'selected' : ''; ?>>
-                    <?php echo htmlspecialchars($agent['name']); ?>
-                </option>
+                <option value="<?php echo htmlspecialchars($agent['id']); ?>" <?php echo $property['agent_id'] == $agent['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($agent['name']); ?></option>
             <?php endforeach; ?>
         </select>
-        <small>Pilih agen yang akan bertanggung jawab atas properti ini.</small>
+        <small>Pilih agen yang bertanggung jawab atas properti ini.</small>
 
-        <h3>Detail Spesifikasi</h3>
-        <label for="luas_tanah">Luas Tanah (Contoh: 6600 m2):</label>
-        <input type="text" name="luas_tanah" value="<?php echo htmlspecialchars($property['luas_tanah']); ?>" placeholder="Luas Tanah">
+        <h3>Fasilitas Properti</h3>
+        <label for="facilities">Fasilitas (pisahkan dengan koma):</label>
+        <textarea name="facilities"><?php echo htmlspecialchars($property['facilities'] ?? ''); ?></textarea>
+        <small>Masukkan fasilitas yang tersedia, dipisahkan dengan koma.</small>
 
-        <label for="luas_bangunan">Luas Bangunan (Contoh: N/A atau 500 m2):</label>
-        <input type="text" name="luas_bangunan" value="<?php echo htmlspecialchars($property['luas_bangunan']); ?>" placeholder="Luas Bangunan">
-
-        <label for="arah_bangunan">Arah Bangunan (Contoh: Timur):</label>
-        <input type="text" name="arah_bangunan" value="<?php echo htmlspecialchars($property['arah_bangunan']); ?>" placeholder="Arah Bangunan">
-
-        <label for="jenis_bangunan">Jenis Bangunan (Contoh: N/A atau Residential):</label>
-        <input type="text" name="jenis_bangunan" value="<?php echo htmlspecialchars($property['jenis_bangunan']); ?>" placeholder="Jenis Bangunan">
-
-        <label for="jumlah_lantai">Jumlah Lantai (Contoh: 1 atau N/A):</label>
-        <input type="text" name="jumlah_lantai" value="<?php echo htmlspecialchars($property['jumlah_lantai']); ?>" placeholder="Jumlah Lantai">
-
-        <label for="kamar_tidur">Kamar Tidur (Contoh: Tidak Ada atau 3):</label>
-        <input type="text" name="kamar_tidur" value="<?php echo htmlspecialchars($property['kamar_tidur']); ?>" placeholder="Kamar Tidur">
-
-        <label for="kamar_pembantu">Kamar Pembantu (Contoh: Tidak Ada atau 1):</label>
-        <input type="text" name="kamar_pembantu" value="<?php echo htmlspecialchars($property['kamar_pembantu']); ?>" placeholder="Kamar Pembantu">
-
-        <label for="kamar_mandi">Kamar Mandi (Contoh: Tidak Ada atau 2):</label>
-        <input type="text" name="kamar_mandi" value="<?php echo htmlspecialchars($property['kamar_mandi']); ?>" placeholder="Kamar Mandi">
-
-        <label for="daya_listrik">Daya Listrik (Contoh: N/A atau 2200 VA):</label>
-        <input type="text" name="daya_listrik" value="<?php echo htmlspecialchars($property['daya_listrik']); ?>" placeholder="Daya Listrik">
-
-        <label for="saluran_air">Saluran Air (Contoh: PDAM):</label>
-        <input type="text" name="saluran_air" value="<?php echo htmlspecialchars($property['saluran_air']); ?>" placeholder="Saluran Air">
-
-        <label for="jalur_telepon">Jalur Telepon (Contoh: Tidak Ada atau Ya):</label>
-        <input type="text" name="jalur_telepon" value="<?php echo htmlspecialchars($property['jalur_telepon']); ?>" placeholder="Jalur Telepon">
-
-        <label for="interior">Interior (Contoh: Kosong atau Full Furnished):</label>
-        <input type="text" name="interior" value="<?php echo htmlspecialchars($property['interior']); ?>" placeholder="Interior">
-
-        <label for="garasi_parkir">Garasi/Parkir (Contoh: Tidak Ada atau Carport 2 Mobil):</label>
-        <input type="text" name="garasi_parkir" value="<?php echo htmlspecialchars($property['garasi_parkir']); ?>" placeholder="Garasi/Parkir">
-
-        <label for="sertifikat">Sertifikat (Contoh: SHM, HGB):</label>
-        <input type="text" name="sertifikat" value="<?php echo htmlspecialchars($property['sertifikat']); ?>" placeholder="Sertifikat">
-
-        <label for="view_count">Jumlah Dilihat (View Count):</label>
-        <input type="number" name="view_count" value="<?php echo htmlspecialchars($property['view_count']); ?>" min="0">
-
-        <h3>Gambar Properti Saat Ini:</h3>
-        <div class="current-images-grid">
-            <?php if (!empty($current_images)): ?>
-                <?php foreach ($current_images as $img): ?>
+        <h3>Gambar Saat Ini</h3>
+        <?php if (empty($images)): ?>
+            <p>Tidak ada gambar saat ini.</p>
+        <?php else: ?>
+            <div class="current-images-grid">
+                <?php foreach ($images as $image): ?>
                     <div class="current-image-item">
-                        <img src="../Uploads/<?php echo htmlspecialchars($img['image_path']); ?>" alt="Current Image">
-                        <a href="?id=<?php echo $property_id; ?>&delete_image_id=<?php echo $img['id']; ?>" class="delete-image-btn" onclick="return confirm('Apakah Anda yakin ingin menghapus gambar ini?');">X</a>
+                        <img src="../Uploads/<?php echo htmlspecialchars($image['image_path']); ?>?t=<?php echo time(); ?>" alt="Property Image">
                     </div>
                 <?php endforeach; ?>
-            <?php else: ?>
-                <p>Tidak ada gambar yang diunggah untuk properti ini.</p>
-            <?php endif; ?>
-        </div>
+            </div>
+        <?php endif; ?>
 
-        <h3>Upload Gambar Baru (Tambahkan Maksimal 5 Gambar Lagi):</h3>
-        <input type="file" name="images[]" accept="image/*" multiple="multiple">
-        <small>Pilih hingga 5 gambar baru untuk ditambahkan ke properti ini.</small>
-        <small>Gambar yang sudah ada di atas tidak akan dihapus kecuali Anda mengklik 'X'.</small>
+        <h3>Tambah Gambar Baru (Maks 5)</h3>
+        <input type="file" id="imageUpload" name="images[]" accept="image/*" multiple>
+        <small>Pilih hingga 5 gambar baru. Gambar diunggah langsung setelah dipilih.</small>
+        <div id="uploadedImageThumbnails" class="current-images-grid"></div>
+        <p id="imageUploadMessage" style="font-size: 0.9em; color: #555;"></p>
+        <input type="hidden" name="uploaded_image_ids" id="uploadedImageIds">
 
-        <button type="submit">Update Properti</button>
+        <button type="submit">Simpan Perubahan</button>
     </form>
 </div>
 
@@ -340,49 +321,129 @@ document.addEventListener('DOMContentLoaded', function() {
     const provinceSelect = document.getElementById('provinceSelect');
     const regencySelect = document.getElementById('regencySelect');
     const regenciesData = <?php echo json_encode($regencies_data_js); ?>;
-
-    function populateRegencies(selectedProvinceName, currentRegencyName = '') {
+    provinceSelect.addEventListener('change', function() {
+        const selectedProvince = this.value;
         regencySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
         regencySelect.disabled = true;
-
-        if (selectedProvinceName && regenciesData[selectedProvinceName]) {
-            regenciesData[selectedProvinceName].forEach(regency => {
+        if (selectedProvince && regenciesData[selectedProvince]) {
+            regenciesData[selectedProvince].forEach(regency => {
                 const option = document.createElement('option');
                 option.value = regency;
                 option.textContent = regency;
-                if (regency === currentRegencyName) {
-                    option.selected = true;
-                }
                 regencySelect.appendChild(option);
             });
             regencySelect.disabled = false;
         }
-    }
-
-    provinceSelect.addEventListener('change', function() {
-        populateRegencies(this.value);
     });
 
-    const initialProvince = provinceSelect.value;
-    const initialRegency = "<?php echo htmlspecialchars($property['regency'] ?? ''); ?>";
-    if (initialProvince) {
-        populateRegencies(initialProvince, initialRegency);
-    }
+    const imageUploadInput = document.getElementById('imageUpload');
+    const uploadedImageThumbnailsDiv = document.getElementById('uploadedImageThumbnails');
+    const imageUploadMessage = document.getElementById('imageUploadMessage');
+    const uploadedImageIdsInput = document.getElementById('uploadedImageIds');
+    const maxImages = 5;
+    let currentImageCount = <?php echo count($images); ?>;
+    let imageIdMap = {};
 
-    // Format input harga saat pengguna mengetik
-    const priceInput = document.querySelector('input[name="price"]');
-    priceInput.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/[^0-9,]/g, ''); // Hanya izinkan angka dan koma
-        if (value.includes(',')) {
-            let parts = value.split(',');
-            if (parts[1] && parts[1].length > 2) {
-                parts[1] = parts[1].slice(0, 2); // Batasi 2 desimal
-            }
-            value = parts.join(',');
+    imageUploadInput.addEventListener('change', function(event) {
+        const files = event.target.files;
+        if (files.length === 0) {
+            imageUploadMessage.textContent = 'Tidak ada file yang dipilih.';
+            return;
         }
-        e.target.value = value;
+
+        const filesToUpload = Array.from(files).slice(0, maxImages - currentImageCount);
+        if (filesToUpload.length === 0 && currentImageCount >= maxImages) {
+            imageUploadMessage.textContent = `Maksimal ${maxImages} gambar.`;
+            return;
+        } else if (filesToUpload.length < files.length) {
+            imageUploadMessage.textContent = `Hanya ${maxImages - currentImageCount} gambar lagi yang dapat diunggah.`;
+        } else {
+            imageUploadMessage.textContent = `Mengunggah ${filesToUpload.length} gambar...`;
+        }
+
+        filesToUpload.forEach(file => {
+            if (currentImageCount >= maxImages) return;
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'upload_image_ajax.php', true);
+            const thumbnailItem = document.createElement('div');
+            thumbnailItem.className = 'current-image-item loading';
+            thumbnailItem.innerHTML = `<img src="" alt="Uploading..." style="opacity: 0.5;"><span class="upload-progress">0%</span>`;
+            uploadedImageThumbnailsDiv.appendChild(thumbnailItem);
+
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    thumbnailItem.querySelector('.upload-progress').textContent = `${percent}%`;
+                }
+            });
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    thumbnailItem.classList.remove('loading');
+                    const progressSpan = thumbnailItem.querySelector('.upload-progress');
+                    if (progressSpan) progressSpan.remove();
+
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            thumbnailItem.querySelector('img').src = '../Uploads/' + response.image_path + '?t=' + new Date().getTime();
+                            thumbnailItem.querySelector('img').style.opacity = 1;
+                            const deleteBtn = document.createElement('a');
+                            deleteBtn.className = 'delete-image-btn';
+                            deleteBtn.textContent = 'X';
+                            deleteBtn.title = 'Hapus gambar';
+                            deleteBtn.onclick = function(e) {
+                                e.preventDefault();
+                                if (confirm('Hapus gambar ini?')) {
+                                    fetch('upload_image_ajax.php?action=delete&id=' + response.image_id)
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                thumbnailItem.remove();
+                                                currentImageCount--;
+                                                delete imageIdMap[response.image_id];
+                                                updateHiddenImageIds();
+                                                imageUploadMessage.textContent = `Gambar dihapus. Sisa slot: ${maxImages - currentImageCount}.`;
+                                            } else {
+                                                imageUploadMessage.textContent = 'Gagal menghapus gambar: ' + data.error;
+                                            }
+                                        })
+                                        .catch(err => {
+                                            imageUploadMessage.textContent = 'Terjadi kesalahan saat menghapus gambar.';
+                                        });
+                                }
+                            };
+                            thumbnailItem.appendChild(deleteBtn);
+                            currentImageCount++;
+                            imageIdMap[response.image_id] = true;
+                            updateHiddenImageIds();
+                            imageUploadMessage.textContent = `Berhasil mengunggah ${currentImageCount} gambar. Sisa slot: ${maxImages - currentImageCount}.`;
+                        } else {
+                            thumbnailItem.remove();
+                            imageUploadMessage.textContent = `Gagal mengunggah ${file.name}: ${response.error}`;
+                        }
+                    } else {
+                        thumbnailItem.remove();
+                        imageUploadMessage.textContent = `Error server saat mengunggah ${file.name}.`;
+                    }
+                    imageUploadInput.value = '';
+                }
+            };
+            xhr.send(formData);
+        });
     });
+
+    function updateHiddenImageIds() {
+        const ids = Object.keys(imageIdMap).filter(id => imageIdMap[id]).join(',');
+        uploadedImageIdsInput.value = ids;
+    }
 });
 </script>
 
-<?php include '../includes/footer.php'; ?>
+<?php
+include '../includes/footer.php';
+ob_end_flush();
+?>

@@ -1,3 +1,6 @@
+<?php
+// No whitespace before this
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -151,7 +154,7 @@
     <div class="header">
         <div class="logo">
             <a href="/LatuaGroup/index.php">
-                <img src="/LatuaGroup/latualogo.png" alt="Latuea Gorup Logo">
+                <img src="/LatuaGroup/latualogo.png" alt="LatuaGroup Logo">
             </a>
         </div>
         <div class="contact-info">

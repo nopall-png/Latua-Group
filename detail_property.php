@@ -511,8 +511,16 @@ try {
                 <div class="facilities">
                     <h3>Fasilitas & Fitur Properti</h3>
                     <ul>
-                        <li>* Security 24 Jam</li>
-                        <li>Dekat Sekolahan</li>
+                        <?php
+                        if (!empty($property['facilities'])) {
+                            $facilities = explode(',', $property['facilities']);
+                            foreach ($facilities as $facility) {
+                                echo '<li>' . htmlspecialchars(trim($facility)) . '</li>';
+                            }
+                        } else {
+                            echo '<li>Tidak ada fasilitas yang tercatat.</li>';
+                        }
+                        ?>
                     </ul>
                 </div>
             </div>

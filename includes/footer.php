@@ -68,11 +68,15 @@ if ($hours[0] !== 'Tutup') {
 
         <div class="footer-section">
             <p>CALL CENTER</p>
-            <a href="tel:+6214705862" class="call-center-button">
-                <i class="fas fa-phone"></i> 021 470 5862
+            <!-- Diperbarui dengan nomor telepon dan email baru -->
+            <a href="tel:+628111440205" class="call-center-button">
+                <i class="fas fa-phone"></i> 0811-1440-205
             </a>
-            <a href="https://wa.me/6214705862" class="whatsapp-button">
+            <a href="https://wa.me/628111440205" class="whatsapp-button">
                 <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+            <a href="mailto:latuealand@gmail.com" class="email-button">
+                 <i class="fas fa-envelope"></i> Email
             </a>
         </div>
     </div>
@@ -118,6 +122,7 @@ if ($hours[0] !== 'Tutup') {
         border-radius: 5px;
         font-weight: bold;
         transition: background-color 0.3s;
+        margin-bottom: 10px; /* Menambah jarak antar tombol */
     }
 
     .footer-button:hover {
@@ -144,36 +149,40 @@ if ($hours[0] !== 'Tutup') {
         background-color: #00C4CC;
     }
 
-    .call-center-button {
-        background-color: #FFC107;
+    .call-center-button, .whatsapp-button, .email-button {
         padding: 15px;
         text-decoration: none;
         color: white;
         font-weight: bold;
         border-radius: 5px;
-        display: inline-block;
-        transition: background-color 0.3s;
+        display: block; /* Mengubah display menjadi block agar setiap tombol berada di baris baru */
         margin-top: 5px;
+        transition: background-color 0.3s;
+        text-align: center;
     }
-
+    
+    .call-center-button {
+        background-color: #FFC107;
+    }
+    
     .call-center-button:hover {
         background-color: #FFA000;
     }
 
     .whatsapp-button {
         background-color: #4CAF50;
-        padding: 15px;
-        text-decoration: none;
-        color: white;
-        font-weight: bold;
-        border-radius: 5px;
-        display: inline-block;
-        margin-top: 5px;
-        transition: background-color 0.3s;
     }
-
+    
     .whatsapp-button:hover {
         background-color: #45A049;
+    }
+
+    .email-button {
+        background-color: #D44638; /* Warna merah untuk email */
+    }
+
+    .email-button:hover {
+        background-color: #B4392C;
     }
 
     .jam-operasional {
@@ -205,7 +214,7 @@ if ($hours[0] !== 'Tutup') {
             text-align: center;
         }
 
-        .footer-button, .call-center-button, .whatsapp-button {
+        .footer-button, .call-center-button, .whatsapp-button, .email-button {
             width: 100%;
             box-sizing: border-box;
         }

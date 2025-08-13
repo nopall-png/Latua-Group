@@ -7,12 +7,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asia One Property</title>
-    <link rel="stylesheet" href="/LatuaGroup/css/style.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/LatuaGroup/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* --- START HEADER STYLES --- */
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
+            margin-top: 0;
+            padding-top: 0;
         }
 
         .header {
@@ -23,6 +31,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 3px;
         }
 
         .logo a {
@@ -30,8 +39,9 @@
         }
         
         .logo img {
-            height: 90px;
+            height: 230px;
             width: auto;
+            max-width: 100%;
         }
 
         .header-right {
@@ -39,6 +49,8 @@
             flex-direction: column;
             align-items: flex-end;
             gap: 15px;
+            margin-top: 10px;
+            margin-bottom: 5px;
         }
         
         .top-bar {
@@ -49,7 +61,7 @@
 
         .contact-info .email {
             font-size: 16px;
-            color: #4a4a4a;
+            color: #000000ff;
             display: flex;
             align-items: center;
             font-weight: 500;
@@ -57,7 +69,7 @@
 
         .contact-info .email i {
             margin-right: 8px;
-            color: #5d3a6c;
+            color: #1d2799ff;
         }
 
         .social-media a {
@@ -79,10 +91,10 @@
         }
 
         .nav-button {
-            background-color: #5d3a6c;
+            background-color: #334894;
             color: #fff;
-            padding: 10px 22px;
-            font-size: 15px;
+            padding: 8px 18px;
+            font-size: 14px;
             text-decoration: none;
             border-radius: 20px;
             font-weight: 600;
@@ -90,7 +102,7 @@
             transition: background-color 0.3s;
         }
         .nav-button:hover {
-            background-color: #7b5a8a;
+            background-color: #4a5eb8;
         }
 
         /* --- STYLES UNTUK TAMPILAN MOBILE --- */
@@ -98,39 +110,44 @@
             /* 1. Atur header utama untuk menumpuk vertikal & di tengah */
             .header {
                 flex-direction: column;
-                gap: 25px; /* Jarak antara logo dan konten di bawahnya */
-                padding: 25px 20px;
+                gap: 20px;
+                padding: 20px 20px;
+                margin-bottom: 0px;
+                min-height: 300px;
             }
 
             .logo img {
-                height: 80px; /* Ukuran logo di mobile */
+                height: 120px;
+                max-width: 100%;
             }
             
             /* 2. Atur blok kanan agar tampil & kontennya di tengah */
             .header-right {
-                display: flex; /* Pastikan ini 'flex', bukan 'none' */
-                align-items: center; /* Konten di tengah */
-                gap: 25px;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                margin-top: 10px;
+                margin-bottom: 10px;
             }
 
             /* 3. Atur baris atas (email & sosmed) agar menumpuk vertikal */
             .top-bar {
                 flex-direction: column;
-                gap: 20px;
+                gap: 15px;
             }
 
             /* 4. Atur tombol navigasi agar menjadi 2x2 */
             .nav-buttons {
-                flex-wrap: wrap; /* Ini kuncinya agar tombol bisa turun ke bawah */
+                flex-wrap: wrap;
                 justify-content: center;
-                max-width: 320px; /* Batasi lebar agar 2 tombol per baris */
-                gap: 15px;
+                max-width: 320px;
+                gap: 12px;
             }
 
             .nav-button {
-                padding: 10px 15px;
-                font-size: 14px;
-                flex-basis: 120px; /* Beri basis lebar untuk setiap tombol */
+                padding: 8px 12px;
+                font-size: 13px;
+                flex-basis: 120px;
                 text-align: center;
             }
         }
@@ -148,7 +165,7 @@
         <div class="header-right">
             <div class="top-bar">
                 <div class="contact-info">
-                    <span class="email"><i class="fas fa-envelope"></i> cs@asiaone.co.id</span>
+                    <span class="email"><i class="fas fa-envelope"></i>latuealand@gmail.com</span>
                 </div>
                 <div class="social-media">
                     <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
@@ -164,8 +181,5 @@
             </div>
         </div>
     </header>
-
-    <div class="container"> 
-        </div>
 </body>
 </html>

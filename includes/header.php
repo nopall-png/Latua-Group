@@ -168,16 +168,14 @@
                     <span class="email"><i class="fas fa-envelope"></i>latuealand@gmail.com</span>
                 </div>
                 <div class="social-media">
-                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="https://www.instagram.com/latuealand/?igsh=OWRhYTd6am42cjly&utm_source=qr#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
             <div class="nav-buttons">
-                <a href="/LatuaGroup/index.php" class="nav-button">Home</a>
-                <a href="/LatuaGroup/about.php" class="nav-button">Tentang Kami</a>
-                <a href="/LatuaGroup/office.php" class="nav-button">Kantor Kami</a>
-                <a href="/LatuaGroup/contact.php" class="nav-button">Hubungi Kami</a>
+                <a href="/LatuaGroup/" class="nav-button">Home</a>
+                <a href="/LatuaGroup/about" class="nav-button">Tentang Kami</a>
+                <a href="/LatuaGroup/office" class="nav-button">Kantor Kami</a>
+                <a href="/LatuaGroup/contact" class="nav-button">Hubungi Kami</a>
             </div>
         </div>
     </header>

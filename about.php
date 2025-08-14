@@ -280,9 +280,8 @@
     <div class="about-card">
         <h2>Selamat Datang di Latuae Land</h2>
         <p class="subtitle">Solusi Properti Cerdas, Aman, dan Menguntungkan</p>
-        <p>Latuae Land adalah perusahaan properti profesional yang telah terdaftar secara resmi. Kami berdiri sejak tahun 2016 dengan komitmen untuk menjadi jembatan antara kebutuhan pembeli, penyewa, dan investor dengan para pengembang atau pemilik properti.</p>
-        <p>Kami menyediakan berbagai jenis properti, mulai dari rumah, apartemen, tanah, gudang, hingga ruko/kantor dan bangunan komersial lainnya. Dengan tim yang berpengalaman dan jaringan yang kuat, kami siap membantu Anda mencapai tujuan properti Anda.</p>
-        <p>Selain itu, kami juga mempermudah klien dengan menyediakan akses ke layanan perbankan, notaris, dan kebutuhan pendukung lainnya yang penting dalam setiap transaksi. Kami adalah mitra properti Anda untuk setiap langkah perjalanan.</p>
+        <p>Di Latuea Land, kami memahami bahwa setiap properti bukan sekadar bangunan—tetapi impian, tujuan, dan investasi masa depan.</p>
+        <p>Sebagai perusahaan jasa properti yang berpengalaman dan terpercaya, kami hadir untuk membantu Anda dalam proses jual, sewa, maupun beli properti dengan cara yang mudah, cepat, dan menguntungkan.</p>
         
         <div class="mission-vision-container">
             <div class="section">
@@ -295,48 +294,6 @@
             </div>
         </div>
         
-        <h3 class="about-section-heading">Mitra Kerja Kami</h3>
-        
-        <p style="text-align: center;">Kami telah bekerjasama dengan berbagai lembaga keuangan, pengembang properti, dan kantor notaris terkemuka. Berikut adalah beberapa mitra kami:</p>
-
-        <div class="about-list-container">
-            <div class="list-section">
-                <h4 style="color: #334894; text-align: center;">Bank Rekanan</h4>
-                <ul class="about-list">
-                    <li>Bank terkemuka nasional</li>
-                    <li>Bank Syariah terpercaya</li>
-                    <li>Bank pembangunan daerah</li>
-                    <li>Lembaga keuangan lainnya</li>
-                </ul>
-            </div>
-            <div class="list-section">
-                <h4 style="color: #334894; text-align: center;">Notaris Rekanan</h4>
-                <p style="text-align: center; padding: 0 10px;">Kami memiliki kerja sama dengan beberapa kantor notaris di area pemasaran properti untuk memastikan kelancaran dan legalitas setiap transaksi.</p>
-            </div>
-        </div>
-
-        <h3 class="about-section-heading">Pengalaman dan Penghargaan</h3>
-        <p style="text-align: center;">Dedikasi kami dalam memberikan pelayanan terbaik telah diakui melalui berbagai pencapaian dan penghargaan:</p>
-
-        <div class="about-list-container">
-            <div class="list-section">
-                <h4 style="color: #334894; text-align: center;">Proyek Penting</h4>
-                <ul class="about-list">
-                    <li>Menjadi Lead Agent untuk proyek hunian vertikal di daerah perkotaan</li>
-                    <li>Kerja sama eksklusif dengan pengembang perumahan berskala besar</li>
-                    <li>Berperan dalam pemasaran properti komersial strategis</li>
-                </ul>
-            </div>
-            <div class="list-section">
-                <h4 style="color: #334894; text-align: center;">Penghargaan</h4>
-                <ul class="about-list">
-                    <li>Penghargaan untuk "The Best Selling Agent"</li>
-                    <li>Diakui sebagai "The Best Active Agent"</li>
-                    <li>Penghargaan untuk "Most Valuable Property Office"</li>
-                </ul>
-            </div>
-        </div>
-
     </div>
 </div>
 

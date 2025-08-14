@@ -4,6 +4,45 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 include 'includes/db_connect.php';
 include 'includes/header.php';
 
+if (isset($_GET['url'])) {
+    $url = trim($_GET['url'], '/');
+    $urlParts = explode('/', $url);
+
+    $page = $urlParts[0] ?: 'home';
+
+    switch ($page) {
+        case 'home':
+            // Tetap lanjut ke kode utama di bawah (halaman utama)
+            break;
+        case 'about':
+            include 'about.php';
+            exit;
+        case 'office':
+            include 'office.php';
+            exit;
+        case 'contact':
+            include 'contact.php';
+            exit;
+        case 'sale':
+            include 'user/sale_properties.php';
+            exit;
+        case 'rent':
+            include 'user/rent_properties.php';
+            exit;
+        case 'detail':
+            if (isset($urlParts[1])) {
+                include 'detail_property.php?id=' . $urlParts[1];
+            } else {
+                echo "Detail tidak ditemukan.";
+                exit;
+            }
+            exit;
+        default:
+            echo "Halaman tidak ditemukan.";
+            exit;
+    }
+}
+
 // Ambil SEMUA gambar hero yang aktif
 $hero_images_data = [];
 try {
@@ -166,7 +205,7 @@ try {
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Asia One Property</title>
+    <title>Latuae Land</title>
     <link rel="stylesheet" href="/LatuaGroup/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
@@ -1126,7 +1165,7 @@ if ($hours[0] !== 'Tutup') {
 <footer class="asiaone-footer">
     <div class="footer-container">
         <div class="footer-section">
-            <a href="/LatuaGroup/agen.php" class="footer-button">
+            <a href="/LatuaGroup/agen" class="footer-button">
                 <i class="fas fa-users"></i>
                 <span>CARI AGEN</span>
                 <p>"Agen-agen kami akan membantu menemukan properti idaman anda"</p>
@@ -1142,7 +1181,7 @@ if ($hours[0] !== 'Tutup') {
         </div>
 
         <div class="footer-section">
-            <a href="/LatuaGroup/sell_property.php" class="footer-button sell-rent-button">
+            <a href="/LatuaGroup/sell_property" class="footer-button sell-rent-button">
                 <i class="fas fa-key"></i>
                 <span>INGIN MENJUAL / MENYEWAKAN?</span>
                 <p>ISI FORM ></p>
@@ -1175,7 +1214,7 @@ if ($hours[0] !== 'Tutup') {
         </div>
     </div>
     <div class="copyright">
-        <p>© 2025 Property Web. All rights reserved.</p>
+        <p>© 2025 Latuea Group. All rights reserved.</p>
     </div>
 </footer>
 

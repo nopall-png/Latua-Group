@@ -31,7 +31,7 @@ if ($hours[0] !== 'Tutup') {
 <footer class="asiaone-footer">
     <div class="footer-container">
         <div class="footer-section">
-            <a href="/LatuaGroup/agen.php" class="footer-button">
+            <a href="/LatuaGroup/agen" class="footer-button">
                 <i class="fas fa-users"></i>
                 <span>CARI AGEN</span>
                 <p>"Agen-agen kami akan membantu menemukan properti idaman anda"</p>
@@ -47,7 +47,7 @@ if ($hours[0] !== 'Tutup') {
         </div>
 
         <div class="footer-section">
-            <a href="/LatuaGroup/sell_property.php" class="footer-button sell-rent-button">
+            <a href="/LatuaGroup/sell_property" class="footer-button sell-rent-button">
                 <i class="fas fa-key"></i>
                 <span>INGIN MENJUAL / MENYEWAKAN?</span>
                 <p>ISI FORM ></p>
@@ -81,7 +81,7 @@ if ($hours[0] !== 'Tutup') {
         </div>
     </div>
     <div class="copyright">
-        <p>© 2025 Property Web. All rights reserved.</p>
+        <p>© 2025 Latue Land. All rights reserved.</p>
     </div>
 </footer>
 

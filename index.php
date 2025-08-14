@@ -181,7 +181,7 @@ try {
 
         body {
             font-family: 'Lato', sans-serif;
-            background-color: #F5F6FA;
+            background-color: #f8f9fa;
             color: #000000;
             line-height: 1.6;
             width: 100%;
@@ -190,7 +190,7 @@ try {
 
         /* Navbar Styles */
         .navbar {
-            background-color: #F5F6FA;
+            background-color: #f8f9fa;
             padding: 15px 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
@@ -198,7 +198,7 @@ try {
         .navbar-brand {
             font-size: 1.5rem;
             font-weight: bold;
-            color: #FFFFFF;
+            color: #ffffff;
             background-color: #334894;
             padding: 8px 15px;
             border-radius: 5px;
@@ -216,12 +216,12 @@ try {
 
         .navbar-brand:hover {
             background-color: #4a5fb3;
-            color: #FFFFFF;
+            color: #ffffff;
         }
 
         .nav-item {
             font-size: 0.85rem;
-            color: #FFFFFF;
+            color: #ffffff;
             background-color: #334894;
             padding: 5px 10px;
             margin: 0 5px;
@@ -233,7 +233,7 @@ try {
 
         .nav-item:hover {
             background-color: #4a5fb3;
-            color: #FFFFFF;
+            color: #ffffff;
         }
 
         /* Hero Section */
@@ -253,7 +253,7 @@ try {
         }
 
         .hero-content {
-            color: #FFFFFF;
+            color: #ffffff;
             text-align: left;
             width: 100%;
             max-width: 100%;
@@ -269,7 +269,7 @@ try {
             -webkit-backdrop-filter: blur(5.1px);
             border: 1px solid rgba(135, 206, 235, 0.57);
             padding: 20px;
-            color: #FFFFFF;
+            color: #ffffff;
             width: 100%;
             max-width: 100%;
         }
@@ -295,7 +295,7 @@ try {
         .form-label {
             font-size: 1.1rem;
             font-weight: 400;
-            color: #FFFFFF;
+            color: #ffffff;
             margin: 0;
             white-space: nowrap;
             font-family: 'Lato', sans-serif;
@@ -312,7 +312,7 @@ try {
         }
 
         .radio-label {
-            color: #FFFFFF;
+            color: #ffffff;
             font-size: 1rem;
             cursor: pointer;
             font-family: 'Lato', sans-serif;
@@ -343,7 +343,7 @@ try {
 
         .price-label {
             font-size: 1rem;
-            color: #FFFFFF;
+            color: #ffffff;
             white-space: nowrap;
             font-family: 'Lato', sans-serif;
         }
@@ -367,32 +367,26 @@ try {
             transform: scale(0.98) !important;
         }
 
-        .view-button {
-            font-family: 'Montserrat', sans-serif !important;
-            font-weight: 600 !important;
-            background-color: #334894 !important;
-            color: #FFFFFF !important;
-            padding: 0.6em 1.4em !important;
-            border-radius: 4px !important;
-            text-decoration: none !important;
-            display: inline-block !important;
-            transition: background-color 0.3s ease, transform 0.1s ease !important;
+        .view-all-text {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #2c3e50;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease, text-decoration 0.3s ease;
+            display: inline-block;
+            margin: 15px 0;
         }
 
-        .view-button:hover {
-            background-color: #4a5fb3 !important;
-            transform: scale(1.05) !important;
-        }
-
-        .view-button:active {
-            background-color: #334894 !important;
-            transform: scale(0.98) !important;
+        .view-all-text:hover {
+            color: #34495e;
+            text-decoration: underline;
         }
 
         .hero-title {
             font-size: 2rem;
             margin-bottom: 1rem;
-            color: #FFFFFF;
+            color: #ffffff;
             padding: 10px 15px;
             display: inline-block;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
@@ -422,7 +416,7 @@ try {
             font-family: 'Montserrat', sans-serif !important;
             font-weight: 700 !important;
             letter-spacing: 0.05em !important;
-            color: #000000 !important;
+            color: #2c3e50 !important;
             text-transform: uppercase !important;
         }
 
@@ -470,8 +464,8 @@ try {
             top: 50%;
             transform: translateY(-50%);
             background: rgba(255, 255, 255, 0.8);
-            color: #000;
-            border: 1px solid #334894;
+            color: #2c3e50;
+            border: 1px solid #e0e0e0;
             padding: 0;
             cursor: pointer;
             z-index: 10;
@@ -494,7 +488,7 @@ try {
 
         .nav-prev:hover, .nav-next:hover, .latest-nav-prev:hover, .latest-nav-next:hover, .sale-nav-prev:hover, .sale-nav-next:hover, .rent-nav-prev:hover, .rent-nav-next:hover {
             background: rgba(255, 255, 255, 1);
-            color: #333;
+            color: #2c3e50;
         }
 
         /* WhatsApp Chat Button */
@@ -526,15 +520,15 @@ try {
 
         /* Property Card */
         .property-card {
-            background: #FFFFFF;
-            border: 2px solid #334894;
+            background: #ffffff;
+            border: 2px solid #e0e0e0;
             border-radius: 12px;
             overflow: hidden;
             width: 100%;
             max-width: 300px;
             min-width: 280px;
             margin: 20px auto;
-            box-shadow: 0 4px 15px rgba(51, 72, 148, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             flex: 0 0 auto;
             scroll-snap-align: center;
         }
@@ -556,8 +550,8 @@ try {
             position: absolute;
             bottom: 10px;
             left: 10px;
-            background: #FFFFFF;
-            color: #000000;
+            background: #ffffff;
+            color: #2c3e50;
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 0.9rem;
@@ -575,7 +569,7 @@ try {
             font-family: 'Arial', sans-serif;
             margin: 0;
             letter-spacing: 0.3px;
-            color: #000000;
+            color: #2c3e50;
         }
 
         .property-card-content {
@@ -585,7 +579,7 @@ try {
 
         .property-title {
             font-size: 1.4rem;
-            color: #000000;
+            color: #2c3e50;
             margin-bottom: 8px;
             text-align: left;
             font-weight: 600;
@@ -605,7 +599,7 @@ try {
             gap: 5px;
             color: #333;
             font-size: 0.85rem;
-            background: #f0f4ff;
+            background: #f8f9fa;
             padding: 4px 6px;
             border-radius: 5px;
             text-align: left;
@@ -617,28 +611,22 @@ try {
 
         .detail-value {
             font-weight: bold;
-            color: #000000;
+            color: #2c3e50;
             font-family: 'Arial', sans-serif;
         }
 
         .detail-item i {
-            color: #334894;
+            color: #2c3e50;
             font-size: 0.85rem;
-        }
-
-        /* View All Link */
-        .view-all-link {
-            text-align: center;
-            margin-top: 15px;
         }
 
         /* Footer Styles */
         .asiaone-footer {
-            background-color: #EDEDED;
+            background-color: #f8f9fa;
             padding: 30px 0;
             color: #333;
             font-family: 'Arial', sans-serif;
-            border-top: 1px solid #DDD;
+            border-top: 1px solid #e0e0e0;
         }
 
         .footer-container {
@@ -667,11 +655,13 @@ try {
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.1s;
+            margin-bottom: 10px;
         }
 
         .footer-button:hover {
             background-color: #009DA6;
+            transform: scale(1.05);
         }
 
         .footer-button i {
@@ -687,43 +677,54 @@ try {
         .footer-button p {
             font-size: 12px;
             margin: 0;
-            color: #FFF;
+            color: #fff;
         }
 
         .sell-rent-button {
             background-color: #00C4CC;
         }
 
-        .call-center-button {
-            background-color: #FFC107;
+        .sell-rent-button:hover {
+            background-color: #009DA6;
+            transform: scale(1.05);
+        }
+
+        .call-center-button, .whatsapp-button, .email-button {
             padding: 15px;
             text-decoration: none;
             color: white;
             font-weight: bold;
             border-radius: 5px;
-            display: inline-block;
-            transition: background-color 0.3s;
+            display: block;
             margin-top: 5px;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .call-center-button {
+            background-color: #FFC107;
         }
 
         .call-center-button:hover {
             background-color: #FFA000;
+            transform: scale(1.05);
         }
 
         .whatsapp-button {
             background-color: #4CAF50;
-            padding: 15px;
-            text-decoration: none;
-            color: white;
-            font-weight: bold;
-            border-radius: 5px;
-            display: inline-block;
-            margin-top: 5px;
-            transition: background-color 0.3s;
         }
 
         .whatsapp-button:hover {
             background-color: #45A049;
+            transform: scale(1.05);
+        }
+
+        .email-button {
+            background-color: #D44638;
+        }
+
+        .email-button:hover {
+            background-color: #B4392C;
+            transform: scale(1.05);
         }
 
         .jam-operasional {
@@ -746,6 +747,7 @@ try {
             margin-top: 20px;
             font-size: 12px;
             color: #666;
+            text-align: center;
         }
 
         /* Media Queries untuk Responsif */
@@ -807,7 +809,7 @@ try {
                 text-align: center;
             }
 
-            .footer-button, .call-center-button, .whatsapp-button {
+            .footer-button, .call-center-button, .whatsapp-button, .email-button {
                 width: 100%;
                 box-sizing: border-box;
             }
@@ -934,7 +936,7 @@ try {
     </div>
 </div>
 
-<a href="https://wa.me/62123456789" class="whatsapp-chat" target="_blank">
+<a href="https://wa.me/628111440205" class="whatsapp-chat" target="_blank">
     <i class="fab fa-whatsapp"></i> Butuh bantuan?
 </a>
 
@@ -1034,7 +1036,7 @@ try {
             <?php endif; ?>
         </div>
         <div class="view-all-link">
-            <a href="user/sale_properties.php" class="view-button">Lihat Semua Properti Dijual</a>
+            <a href="user/sale_properties.php" class="view-all-text">Lihat Semua Properti Dijual</a>
         </div>
     </div>
 
@@ -1086,10 +1088,96 @@ try {
             <?php endif; ?>
         </div>
         <div class="view-all-link">
-            <a href="user/rent_properties.php" class="view-button">Lihat Semua Properti Disewakan</a>
+            <a href="user/rent_properties.php" class="view-all-text">Lihat Semua Properti Disewakan</a>
         </div>
     </div>
 </div>
+
+<?php
+// Dapatkan waktu saat ini (WIB)
+date_default_timezone_set('Asia/Jakarta');
+$currentTime = date('H:i');
+$currentDay = date('l');
+$currentDate = date('d F Y');
+
+// Tentukan status operasional
+$operatingHours = [
+    'Monday' => ['09:00', '17:00'],
+    'Tuesday' => ['09:00', '17:00'],
+    'Wednesday' => ['09:00', '17:00'],
+    'Thursday' => ['09:00', '17:00'],
+    'Friday' => ['09:00', '17:00'],
+    'Saturday' => ['09:00', '14:00'],
+    'Sunday' => ['Tutup', 'Tutup']
+];
+
+$hours = $operatingHours[$currentDay];
+$isOpen = false;
+
+if ($hours[0] !== 'Tutup') {
+    $openTime = strtotime($hours[0]);
+    $closeTime = strtotime($hours[1]);
+    $currentTimeStamp = strtotime($currentTime);
+
+    $isOpen = ($currentTimeStamp >= $openTime && $currentTimeStamp < $closeTime);
+}
+?>
+
+<footer class="asiaone-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <a href="/LatuaGroup/agen.php" class="footer-button">
+                <i class="fas fa-users"></i>
+                <span>CARI AGEN</span>
+                <p>"Agen-agen kami akan membantu menemukan properti idaman anda"</p>
+            </a>
+        </div>
+
+        <div class="footer-section">
+            <a href="#" class="footer-button">
+                <i class="fas fa-home"></i>
+                <span>CARI PROPERTI</span>
+                <p>Cari Rumah, Apartemen, Ruko/Komersil, Tanah, atau Gudang</p>
+            </a>
+        </div>
+
+        <div class="footer-section">
+            <a href="/LatuaGroup/sell_property.php" class="footer-button sell-rent-button">
+                <i class="fas fa-key"></i>
+                <span>INGIN MENJUAL / MENYEWAKAN?</span>
+                <p>ISI FORM ></p>
+            </a>
+        </div>
+
+        <div class="footer-section jam-operasional">
+            <p>JAM OPERASIONAL</p>
+            <p>Senin - Jumat: <span class="time">09:00 - 17:00</span></p>
+            <p>Sabtu: <span class="time">09:00 - 14:00</span></p>
+            <p>Minggu & Hari Libur: <span class="time">Tutup</span></p>
+            <?php if ($isOpen): ?>
+                <p style="color: green; font-weight: bold;">Sedang Buka Sekarang</p>
+            <?php else: ?>
+                <p style="color: red; font-weight: bold;">Tutup Sekarang</p>
+            <?php endif; ?>
+        </div>
+
+        <div class="footer-section">
+            <p>CALL CENTER</p>
+            <a href="tel:+628111440205" class="call-center-button">
+                <i class="fas fa-phone"></i> 0811-1440-205
+            </a>
+            <a href="https://wa.me/628111440205" class="whatsapp-button">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+            <a href="mailto:latuealand@gmail.com" class="email-button">
+                <i class="fas fa-envelope"></i> Email
+            </a>
+        </div>
+    </div>
+    <div class="copyright">
+        <p>© 2025 Property Web. All rights reserved.</p>
+    </div>
+</footer>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1164,89 +1252,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-<?php
-// Dapatkan waktu saat ini (WIB)
-date_default_timezone_set('Asia/Jakarta');
-$currentTime = date('H:i');
-$currentDay = date('l');
-$currentDate = date('d F Y');
-
-// Tentukan status operasional
-$operatingHours = [
-    'Monday' => ['09:00', '17:00'],
-    'Tuesday' => ['09:00', '17:00'],
-    'Wednesday' => ['09:00', '17:00'],
-    'Thursday' => ['09:00', '17:00'],
-    'Friday' => ['09:00', '17:00'],
-    'Saturday' => ['09:00', '14:00'],
-    'Sunday' => ['Tutup', 'Tutup']
-];
-
-$hours = $operatingHours[$currentDay];
-$isOpen = false;
-
-if ($hours[0] !== 'Tutup') {
-    $openTime = strtotime($hours[0]);
-    $closeTime = strtotime($hours[1]);
-    $currentTimeStamp = strtotime($currentTime);
-
-    $isOpen = ($currentTimeStamp >= $openTime && $currentTimeStamp < $closeTime);
-}
-?>
-
-<footer class="asiaone-footer">
-    <div class="footer-container">
-        <div class="footer-section">
-            <a href="/LatuaGroup/agen.php" class="footer-button">
-                <i class="fas fa-users"></i>
-                <span>CARI AGEN</span>
-                <p>"Agen-agen kami akan membantu menemukan properti idaman anda"</p>
-            </a>
-        </div>
-
-        <div class="footer-section">
-            <a href="#" class="footer-button">
-                <i class="fas fa-home"></i>
-                <span>CARI PROPERTI</span>
-                <p>Cari Rumah, Apartemen, Ruko/Komersil, Tanah, atau Gudang</p>
-            </a>
-        </div>
-
-        <div class="footer-section">
-            <a href="/LatuaGroup/sell_property.php" class="footer-button sell-rent-button">
-                <i class="fas fa-key"></i>
-                <span>INGIN MENJUAL / MENYEWAKAN?</span>
-                <p>ISI FORM ></p>
-            </a>
-        </div>
-
-        <div class="footer-section jam-operasional">
-            <p>JAM OPERASIONAL</p>
-            <p>Senin - Jumat: <span class="time">09:00 - 17:00</span></p>
-            <p>Sabtu: <span class="time">09:00 - 14:00</span></p>
-            <p>Minggu & Hari Libur: <span class="time">Tutup</span></p>
-            <?php if ($isOpen): ?>
-                <p style="color: green; font-weight: bold;">Sedang Buka Sekarang</p>
-            <?php else: ?>
-                <p style="color: red; font-weight: bold;">Tutup Sekarang</p>
-            <?php endif; ?>
-        </div>
-
-        <div class="footer-section">
-            <p>CALL CENTER</p>
-            <a href="tel:+6214705862" class="call-center-button">
-                <i class="fas fa-phone"></i> 021 470 5862
-            </a>
-            <a href="https://wa.me/6214705862" class="whatsapp-button">
-                <i class="fab fa-whatsapp"></i> WhatsApp
-            </a>
-        </div>
-    </div>
-    <div class="copyright">
-        <p>© 2025 Property Web. All rights reserved.</p>
-    </div>
-</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>

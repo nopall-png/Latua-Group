@@ -55,34 +55,50 @@ $properties = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Properties for Sale</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #f8f9fa;
+        }
+
         /* Main Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-            font-family: 'Lato', sans-serif;
+            margin-top: 3px;
+            padding: 12px;
+            box-sizing: border-box;
         }
         
         h1 {
-            color: #334894;
+            color: #2c3e50;
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 2rem;
+            margin: 0 0 12px 0;
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        
+        /* Grid Wrapper */
+        .grid-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
         }
         
         /* Property Grid */
         .property-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            margin: 30px 0;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 360px));
+            gap: 4px;
+            margin: 6px 0;
+            justify-content: center;
+            width: 100%;
         }
         
         /* Property Card */
@@ -96,18 +112,19 @@ $properties = $stmt->fetchAll();
         .property-card {
             background: #FFFFFF;
             border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            border-radius: 10px;
             overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
             height: 100%;
             display: flex;
             flex-direction: column;
+            max-width: 100%;
         }
         
         .property-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
         
         .property-image-container {
@@ -121,45 +138,46 @@ $properties = $stmt->fetchAll();
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
         }
         
         .property-card:hover .property-image-container img {
-            transform: scale(1.03);
+            transform: scale(1.02);
         }
         
         /* Price Overlay */
         .price-overlay {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
+            bottom: 6px;
+            left: 6px;
             background: #FFFFFF;
             color: #000000;
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 4px;
-            font-size: 1rem;
-            font-weight: bold;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             border: 1px solid #e0e0e0;
         }
         
         .price-text {
-            font-size: 1rem;
-            font-weight: bold;
+            font-size: 0.85rem;
+            font-weight: 600;
             margin: 0;
             color: #000000;
+            white-space: nowrap;
         }
         
         /* Card Content */
         .property-card-content {
-            padding: 15px;
+            padding: 10px;
             flex-grow: 1;
         }
         
         .property-title {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: #000000;
-            margin-bottom: 12px;
+            margin: 0 0 8px 0;
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
@@ -169,22 +187,25 @@ $properties = $stmt->fetchAll();
         .property-details {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 10px;
+            gap: 6px;
+            margin-top: 6px;
         }
         
         .detail-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
+            gap: 5px;
+            font-size: 0.8rem;
             color: #555;
+            background: #f8f9fa;
+            padding: 5px 8px;
+            border-radius: 5px;
         }
         
         .detail-item i {
             color: #334894;
-            font-size: 0.9rem;
-            min-width: 16px;
+            font-size: 0.8rem;
+            min-width: 12px;
             text-align: center;
         }
         
@@ -197,23 +218,25 @@ $properties = $stmt->fetchAll();
         .pagination {
             display: flex;
             justify-content: center;
-            margin-top: 40px;
-            gap: 5px;
+            margin-top: 16px;
+            gap: 4px;
             flex-wrap: wrap;
         }
         
         .page-link, .prev-next {
-            padding: 8px 12px;
+            padding: 5px 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
             text-decoration: none;
             color: #334894;
-            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
         }
         
         .page-link:hover, .prev-next:hover {
             background-color: #334894;
             color: white;
+            border-color: #334894;
         }
         
         .active {
@@ -223,91 +246,191 @@ $properties = $stmt->fetchAll();
         }
         
         .page-dots {
+            padding: 5px 8px;
+            font-size: 0.85rem;
+            color: #555;
+        }
+        
+        /* WhatsApp Chat Button */
+        .whatsapp-chat {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: #25D366;
+            color: white;
             padding: 8px 12px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 3px 10px rgba(37, 211, 102, 0.3);
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 1000;
+            font-size: 0.85rem;
+        }
+        .whatsapp-chat i {
+            font-size: 1rem;
+        }
+        .whatsapp-chat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
         }
         
         /* No Properties Message */
         .no-properties {
             text-align: center;
             grid-column: 1 / -1;
-            padding: 40px 0;
+            padding: 20px 0;
             color: #666;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .container {
+                margin-top: 3px;
+                padding: 4px;
+            }
+            
+            h1 {
+                font-size: 1.2rem;
+                margin: 0 0 8px 0;
+            }
+            
+            .grid-wrapper {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .property-grid {
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                gap: 12px;
+                margin: 8px 0;
+            }
+            
+            .property-card {
+                max-width: 95vw;
+                margin: 0 auto;
+                border-radius: 8px;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+            }
+            
+            .property-image-container {
+                height: 160px;
+            }
+            
+            .property-title {
+                font-size: 0.95rem;
+                margin: 0 0 6px 0;
+            }
+            
+            .property-details {
+                grid-template-columns: 1fr;
+                gap: 5px;
+                margin-top: 5px;
+            }
+            
+            .detail-item {
+                font-size: 0.75rem;
+                gap: 4px;
+                padding: 4px 6px;
+            }
+            
+            .detail-item i {
+                font-size: 0.75rem;
+                min-width: 10px;
+            }
+            
+            .price-overlay {
+                padding: 3px 6px;
+                font-size: 0.75rem;
+                bottom: 5px;
+                left: 5px;
+            }
+            
+            .price-text {
+                font-size: 0.75rem;
+            }
+            
+            .property-card-content {
+                padding: 8px;
+            }
+            
+            .whatsapp-chat {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+                bottom: 10px;
+                right: 10px;
+            }
+            .whatsapp-chat i {
+                font-size: 0.9rem;
+            }
+            
+            .pagination {
+                margin-top: 12px;
+                gap: 3px;
+            }
+            .page-link, .prev-next {
+                padding: 4px 6px;
+                font-size: 0.75rem;
+            }
+            .page-dots {
+                padding: 4px 6px;
+                font-size: 0.75rem;
+            }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Properties for Sale</h1>
-    <div class="property-grid">
-        <?php if (empty($properties)): ?>
-            <p class="no-properties">Tidak ada properti untuk dijual saat ini.</p>
-        <?php else: ?>
-            <?php foreach ($properties as $property): ?>
-                <a href="../detail_property.php?id=<?php echo $property['id']; ?>" class="property-card-link">
-                    <div class="property-card">
-                        <div class="property-image-container">
-                            <img src="../Uploads/<?php echo htmlspecialchars($property['main_image_path'] ?? 'default.jpg'); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>">
-                            <div class="price-overlay">
-                                <p class="price-text">Rp <?php echo number_format($property['price'], 0, ',', '.'); ?></p>
-                            </div>
-                        </div>
-                        <div class="property-card-content">
-                            <h3 class="property-title"><?php echo htmlspecialchars($property['title']); ?></h3>
-                            <div class="property-details">
-                                <div class="detail-item">
-                                    <i class="fas fa-ruler-combined"></i>
-                                    <span class="detail-value"><?php echo htmlspecialchars($property['luas_tanah'] ?? 'N/A'); ?> m²</span>
-                                </div>
-                                <div class="detail-item">
-                                    <i class="fas fa-home"></i>
-                                    <span class="detail-value"><?php echo htmlspecialchars($property['luas_bangunan'] ?? 'N/A'); ?> m²</span>
-                                </div>
-                                <div class="detail-item">
-                                    <i class="fas fa-bed"></i>
-                                    <span class="detail-value"><?php echo htmlspecialchars($property['kamar_tidur'] ?? 'N/A'); ?></span>
-                                </div>
-                                <div class="detail-item">
-                                    <i class="fas fa-bath"></i>
-                                    <span class="detail-value"><?php echo htmlspecialchars($property['kamar_mandi'] ?? 'N/A'); ?></span>
+    <div class="grid-wrapper">
+        <div class="property-grid">
+            <?php if (empty($properties)): ?>
+                <p class="no-properties">Tidak ada properti untuk dijual saat ini.</p>
+            <?php else: ?>
+                <?php foreach ($properties as $property): ?>
+                    <a href="../detail_property.php?id=<?php echo $property['id']; ?>" class="property-card-link">
+                        <div class="property-card">
+                            <div class="property-image-container">
+                                <img src="../Uploads/<?php echo htmlspecialchars($property['main_image_path'] ?? 'default.jpg'); ?>" alt="<?php echo htmlspecialchars($property['title']); ?>">
+                                <div class="price-overlay">
+                                    <p class="price-text">Rp <?php echo number_format($property['price'], 0, ',', '.'); ?></p>
                                 </div>
                             </div>
+                            <div class="property-card-content">
+                                <h3 class="property-title"><?php echo htmlspecialchars($property['title']); ?></h3>
+                                <div class="property-details">
+                                    <div class="detail-item">
+                                        <i class="fas fa-ruler-combined"></i>
+                                        <span class="detail-value"><?php echo htmlspecialchars($property['luas_tanah'] ?? 'N/A'); ?> m²</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-home"></i>
+                                        <span class="detail-value"><?php echo htmlspecialchars($property['luas_bangunan'] ?? 'N/A'); ?> m²</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-bed"></i>
+                                        <span class="detail-value"><?php echo htmlspecialchars($property['kamar_tidur'] ?? 'N/A'); ?></span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-bath"></i>
+                                        <span class="detail-value"><?php echo htmlspecialchars($property['kamar_mandi'] ?? 'N/A'); ?></span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            <?php endforeach; ?>
-        <?php endif; ?>
+                    </a>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
     </div>
 
-        <a href="https://wa.me/62123456789" class="whatsapp-chat">
-    <i class="fab fa-whatsapp"></i> Butuh bantuan? Chat dengan kami
+    <a href="https://wa.me/62123456789" class="whatsapp-chat">
+        <i class="fab fa-whatsapp"></i> Butuh bantuan? Chat
     </a>
-
-    <style>
-        /* WhatsApp Chat Button */
-        .whatsapp-chat {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #25D366;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-            text-decoration: none;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .whatsapp-chat i {
-            font-size: 24px;
-        }
-        .whatsapp-chat:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
-        }
-    </style>
 
     <?php if ($total_pages > 1): ?>
         <div class="pagination">
@@ -326,8 +449,7 @@ $properties = $stmt->fetchAll();
                 }
             }
 
-            for ($i = $start_page; $i <= $end_page; $i++):
-            ?>
+            for ($i = $start_page; $i <= $end_page; $i++): ?>
                 <a href="?page=<?php echo $i; ?>" class="page-link <?php echo ($i == $current_page) ? 'active' : ''; ?>">
                     <?php echo $i; ?>
                 </a>

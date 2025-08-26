@@ -1,32 +1,4 @@
-# Aktifkan Rewrite Engine
 RewriteEngine On
-
-# Menghapus index.php dari URL (redirect bersih)
-RewriteCond %{THE_REQUEST} ^GET\ /index\.php [NC]
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php\ HTTP/
 RewriteRule ^index\.php$ / [R=301,L]
-
-# Menghapus .php dari URL dan mengarahkannya ke file yang sesuai
-RewriteCond %{REQUEST_FILENAME}.php -f
-RewriteRule ^(.+)/$ $1.php [L]
-RewriteRule ^([^.]+)$ $1.php [L]
-
-# Mengarahkan semua permintaan yang tidak cocok dengan file/direktori ke index.php untuk routing
-# Tambahkan pengecualian untuk file statis (gambar, CSS, JS, dll.)
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !\.(jpg|jpeg|png|gif|css|js|ico)$ [NC]
-RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
-
-# Atur DirectoryIndex agar index.php menjadi default
 DirectoryIndex index.php
-
-# Header tambahan untuk keamanan (opsional)
-Header always set X-Content-Type-Options "nosniff"
-Header always set X-Frame-Options "SAMEORIGIN"
-Header always set X-XSS-Protection "1; mode=block"
-
-# Cache control (opsional, sesuai dengan header di kode PHP Anda)
-<IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresDefault "access plus 1 month"
-</IfModule>

@@ -1,11 +1,11 @@
 <?php
 ob_start();
 session_start();
-require_once '../includes/db_connect.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/LatuaGroup/includes/db_connect.php';
 
 if (!isset($_SESSION['user_id'])) {
     $_SESSION['error_message'] = "<span class='error-message'>Silakan login untuk mengunggah properti.</span>";
-    header('Location: ../auth/login.php');
+    header('Location: /LatuaGroup/auth/login.php');
     exit();
 }
 
@@ -66,61 +66,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_property'])) {
             $uploaded_image_ids_str = $_POST['uploaded_image_ids'] ?? '';
             $uploaded_image_ids = array_filter(explode(',', $uploaded_image_ids_str), 'is_numeric');
 
-            try {
-                $pdo->beginTransaction();
-
-                $stmt = $pdo->prepare("INSERT INTO properties (
-                    id_properti, title, description, price, province, regency, district_or_area,
-                    property_type, tipe_properti, luas_tanah, luas_bangunan, arah_bangunan,
-                    jenis_bangunan, jumlah_lantai, kamar_tidur, kamar_pembantu, kamar_mandi,
-                    daya_listrik, saluran_air, jalur_telepon, interior, garasi_parkir, sertifikat,
-                    view_count, agent_id, facilities
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([
-                    $id_properti, $title, $description, $price, $province, $regency, $district_or_area,
-                    $property_type, $tipe_properti, $luas_tanah, $luas_bangunan, $arah_bangunan,
-                    $jenis_bangunan, $jumlah_lantai, $kamar_tidur, $kamar_pembantu, $kamar_mandi,
-                    $daya_listrik, $saluran_air, $jalur_telepon, $interior, $garasi_parkir, $sertifikat,
-                    0, $agent_id, $facilities
-                ]);
-
-                $property_id = $pdo->lastInsertId();
-
-                $image_insert_count = 0;
-                if (!empty($uploaded_image_ids)) {
-                    error_log("Moving images for property_id: $property_id, image_ids: " . implode(',', $uploaded_image_ids));
-                    $placeholders = str_repeat('?,', count($uploaded_image_ids) - 1) . '?';
-                    $stmt = $pdo->prepare("SELECT id, image_path FROM property_images_temp WHERE id IN ($placeholders)");
-                    $stmt->execute($uploaded_image_ids);
-                    $temp_images = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                    if ($temp_images) {
-                        $stmt_insert = $pdo->prepare("INSERT INTO property_images (property_id, image_path) VALUES (?, ?)");
-                        foreach ($temp_images as $image) {
-                            $source_path = '../Uploads/' . $image['image_path'];
-                            if (file_exists($source_path) && getimagesize($source_path)) {
-                                $stmt_insert->execute([$property_id, $image['image_path']]);
-                                $image_insert_count++;
-                            } else {
-                                error_log("Invalid or missing image: $source_path");
-                                $upload_messages[] = "<span class='error-message'>Gambar ID {$image['id']} tidak valid atau tidak ditemukan.</span>";
-                            }
-                        }
-                        $stmt_delete = $pdo->prepare("DELETE FROM property_images_temp WHERE id IN ($placeholders)");
-                        $stmt_delete->execute($uploaded_image_ids);
-                    } else {
-                        $upload_messages[] = "<span class='error-message'>Tidak ada gambar di tabel sementara untuk ID: " . implode(',', $uploaded_image_ids) . "</span>";
-                    }
+            // Create directory if it doesn't exist
+            $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/LatuaGroup/Uploads/properties/';
+            if (!is_dir($upload_dir)) {
+                if (!mkdir($upload_dir, 0755, true)) {
+                    $upload_messages[] = "<span class='error-message'>Gagal membuat direktori Uploads/properties/.</span>";
                 }
+            }
 
-                $pdo->commit();
-                $upload_messages[] = "<span class='success-message'>Properti berhasil diunggah dengan $image_insert_count gambar!</span>";
-                $_SESSION['property_messages'] = $upload_messages;
-                header('Location: index.php');
-                exit();
-            } catch (PDOException $e) {
-                $pdo->rollBack();
-                $upload_messages[] = "<span class='error-message'>Error mengunggah properti: " . $e->getMessage() . "</span>";
+            if (is_dir($upload_dir) && is_writable($upload_dir)) {
+                try {
+                    $pdo->beginTransaction();
+
+                    $stmt = $pdo->prepare("INSERT INTO properties (
+                        id_properti, title, description, price, province, regency, district_or_area,
+                        property_type, tipe_properti, luas_tanah, luas_bangunan, arah_bangunan,
+                        jenis_bangunan, jumlah_lantai, kamar_tidur, kamar_pembantu, kamar_mandi,
+                        daya_listrik, saluran_air, jalur_telepon, interior, garasi_parkir, sertifikat,
+                        view_count, agent_id, facilities
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([
+                        $id_properti, $title, $description, $price, $province, $regency, $district_or_area,
+                        $property_type, $tipe_properti, $luas_tanah, $luas_bangunan, $arah_bangunan,
+                        $jenis_bangunan, $jumlah_lantai, $kamar_tidur, $kamar_pembantu, $kamar_mandi,
+                        $daya_listrik, $saluran_air, $jalur_telepon, $interior, $garasi_parkir, $sertifikat,
+                        0, $agent_id, $facilities
+                    ]);
+
+                    $property_id = $pdo->lastInsertId();
+
+                    $image_insert_count = 0;
+                    if (!empty($uploaded_image_ids)) {
+                        error_log("Moving images for property_id: $property_id, image_ids: " . implode(',', $uploaded_image_ids));
+                        $placeholders = str_repeat('?,', count($uploaded_image_ids) - 1) . '?';
+                        $stmt = $pdo->prepare("SELECT id, image_path FROM property_images_temp WHERE id IN ($placeholders)");
+                        $stmt->execute($uploaded_image_ids);
+                        $temp_images = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                        if ($temp_images) {
+                            $stmt_insert = $pdo->prepare("INSERT INTO property_images (property_id, image_path) VALUES (?, ?)");
+                            foreach ($temp_images as $image) {
+                                $source_path = $_SERVER['DOCUMENT_ROOT'] . '/LatuaGroup/Uploads/properties/' . $image['image_path'];
+                                if (file_exists($source_path) && getimagesize($source_path)) {
+                                    $stmt_insert->execute([$property_id, $image['image_path']]);
+                                    $image_insert_count++;
+                                } else {
+                                    error_log("Invalid or missing image: $source_path");
+                                    $upload_messages[] = "<span class='error-message'>Gambar ID {$image['id']} tidak valid atau tidak ditemukan.</span>";
+                                }
+                            }
+                            $stmt_delete = $pdo->prepare("DELETE FROM property_images_temp WHERE id IN ($placeholders)");
+                            $stmt_delete->execute($uploaded_image_ids);
+                        } else {
+                            $upload_messages[] = "<span class='error-message'>Tidak ada gambar di tabel sementara untuk ID: " . implode(',', $uploaded_image_ids) . "</span>";
+                        }
+                    }
+
+                    $pdo->commit();
+                    $upload_messages[] = "<span class='success-message'>Properti berhasil diunggah dengan $image_insert_count gambar!</span>";
+                    $_SESSION['property_messages'] = $upload_messages;
+                    header('Location: /LatuaGroup/admin/index.php');
+                    exit();
+                } catch (PDOException $e) {
+                    $pdo->rollBack();
+                    $upload_messages[] = "<span class='error-message'>Error mengunggah properti: " . $e->getMessage() . "</span>";
+                }
+            } else {
+                $upload_messages[] = "<span class='error-message'>Direktori Uploads/properties/ tidak dapat ditulis. Periksa izin direktori.</span>";
             }
         }
     }
@@ -141,7 +153,7 @@ $property_types = [
     "Ruko", "Rumah", "Rumah Kost", "Tanah"
 ];
 
-require_once '../includes/header.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/LatuaGroup/includes/header.php';
 ?>
 
 <style>
@@ -328,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('image', file);
 
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'upload_image_ajax.php', true);
+            xhr.open('POST', '/LatuaGroup/admin/upload_image_ajax.php', true);
             const thumbnailItem = document.createElement('div');
             thumbnailItem.className = 'current-image-item loading';
             thumbnailItem.innerHTML = `<img src="" alt="Uploading..." style="opacity: 0.5;"><span class="upload-progress">0%</span>`;
@@ -350,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success) {
-                            thumbnailItem.querySelector('img').src = '../Uploads/' + response.image_path + '?t=' + new Date().getTime();
+                            thumbnailItem.querySelector('img').src = '/LatuaGroup/Uploads/properties/' + response.image_path + '?t=' + new Date().getTime();
                             thumbnailItem.querySelector('img').style.opacity = 1;
                             const deleteBtn = document.createElement('a');
                             deleteBtn.className = 'delete-image-btn';
@@ -359,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             deleteBtn.onclick = function(e) {
                                 e.preventDefault();
                                 if (confirm('Hapus gambar ini?')) {
-                                    fetch('upload_image_ajax.php?action=delete&id=' + response.image_id)
+                                    fetch('/LatuaGroup/admin/upload_image_ajax.php?action=delete_temp&id=' + response.image_id)
                                         .then(res => res.json())
                                         .then(data => {
                                             if (data.success) {
@@ -405,6 +417,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <?php
-include '../includes/footer.php';
+include $_SERVER['DOCUMENT_ROOT'] . '/LatuaGroup/includes/footer.php';
 ob_end_flush();
 ?>

@@ -1,20 +1,20 @@
 const App = () => {
   return (
     <div className="w-full">
-      {/* Properti Terbaru */}
-      <section className="py-12 px-6">
-        <PropertyList />
-      </section>
+      {/* Hero Search Section */}
+      <HeroSearch />
 
-      {/* Project Terbaru */}
-      <section className="py-12 px-6 bg-white">
-        <ProjectSection />
-      </section>
+      {/* Property List */}
+      <PropertyList />
 
-      {/* Kenapa Memilih Kami */}
-      <section className="py-12 px-6 bg-gray-50">
-        <WhyChooseUsSection />
-      </section>
+      {/* Bank Partner Section */}
+      <BankPartnerSection />
+
+      {/* Project Section */}
+      <ProjectSection />
+
+      {/* Why Choose Us */}
+      <WhyChooseUsSection />
     </div>
   );
 };

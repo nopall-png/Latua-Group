@@ -1,3 +1,21 @@
+import React from "react";
+
+const PropertyCard = ({ id, title, price, province, regency, property_type, image_url }) => {
+  return (
+    <div className="min-w-[250px] max-w-[300px] bg-white rounded-lg shadow-md overflow-hidden">
+      <img src={image_url} alt={title} className="w-full h-40 object-cover" />
+      <div className="p-4">
+        <h3 className="font-semibold text-lg">{title}</h3>
+        <p className="text-gray-500 text-sm">{province}, {regency}</p>
+        <p className="text-gray-800 font-bold">Rp {Number(price).toLocaleString()}</p>
+        <p className="text-xs text-gray-500 mt-1">
+          {property_type === "for_sale" ? "Dijual" : "Disewa"}
+        </p>
+      </div>
+    </div>
+  );
+};
+
 const PropertyList = () => {
   const [properties, setProperties] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
@@ -7,6 +25,10 @@ const PropertyList = () => {
       .then(res => res.json())
       .then(data => {
         setProperties(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching properties:", err);
         setLoading(false);
       });
   }, []);
@@ -19,13 +41,13 @@ const PropertyList = () => {
       <h1 className="text-2xl font-bold text-center mb-6">Properti Terbaru</h1>
 
       {/* Slider */}
-      <div className="flex gap-6 overflow-x-auto px-6 pb-4 scrollbar-hide">
+      <div id="property-slider" className="flex gap-6 overflow-x-auto px-6 pb-4 scrollbar-hide">
         {properties.length === 0 
           ? <p className="col-span-full text-center text-gray-500">Belum ada properti tersedia.</p>
           : properties.map((p) => <PropertyCard key={p.id} {...p} />)}
       </div>
 
-      {/* Arrows (opsional, bisa dibuat fungsi scroll kiri/kanan) */}
+      {/* Arrows */}
       <button 
         onClick={() => document.querySelector('#property-slider').scrollBy({ left: -300, behavior: 'smooth' })}
         className="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow p-2 rounded-full"
@@ -41,3 +63,5 @@ const PropertyList = () => {
     </div>
   );
 };
+
+export default PropertyList;

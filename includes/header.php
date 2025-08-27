@@ -3,33 +3,51 @@
 $page_title = isset($page_title) ? $page_title : 'Latuae Land';
 ?>
 
-<nav class="bg-[#000000] text-white py-2 px-4 flex justify-between items-center">
-    <!-- Logo Section -->
-    <div class="logo">
-        <a href="../pages/index.php">
-        </a>
+<nav class="bg-white shadow-md fixed top-0 left-0 w-full z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    
+    <!-- Logo -->
+    <div class="flex items-center">
+      <a href="/LatuaGroup/pages/index.php" class="flex items-center space-x-2">
+        <img src="/LatuaGroup/uploads/latualogo.png" alt="Latuae Land" class="h-8 w-auto">
+      </a>
     </div>
 
-    <!-- Navigation Links -->
-    <div class="flex space-x-6 pl-16">
-        <a href="#" class="hover:text-gray-300 flex items-center font-raleway">Properti <span class="ml-1"></span></a>
-        <a href="#" class="hover:text-gray-300 flex items-center font-raleway">Layanan <span class="ml-1"></span></a>
-        <a href="#" class="hover:text-gray-300 flex items-center font-raleway">Tentang Kami <span class="ml-1"></span></a>
+    <!-- Navigation Menu -->
+    <div class="hidden md:flex space-x-8">
+      <a href="#" class="text-gray-700 hover:text-blue-900 font-medium">Properti</a>
+      <a href="#" class="text-gray-700 hover:text-blue-900 font-medium">Layanan</a>
+      <a href="#" class="text-gray-700 hover:text-blue-900 font-medium">Proyek</a>
+      <a href="#" class="text-gray-700 hover:text-blue-900 font-medium">Tentang Kami</a>
     </div>
 
-    <!-- Right Section (Language, Contact, Search) -->
+    <!-- Right Section -->
     <div class="flex items-center space-x-4">
-        <div class="relative">
-            <select class="bg-[#000000] text-white border-none outline-none appearance-none pr-2">
-                <option>IND</option>
-                <option>ENG</option>
-            </select>
-            <span class="absolute right-0 top-0 mt-1 mr-2"></span>
-        </div>
-        <a href="#" class="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800">Hubungi Kami</a>
-        <div class="relative">
-            <input type="text" placeholder="Search..." class="bg-white text-black px-3 py-1 rounded-md focus:outline-none">
-            <span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500">🔍</span>
-        </div>
+      <!-- Language Selector -->
+      <select class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none">
+        <option>IND</option>
+        <option>ENG</option>
+      </select>
+
+      <!-- Contact Button -->
+      <a href="#" class="bg-blue-900 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-800 transition">
+        Hubungi Kami
+      </a>
+
+      <!-- Search Bar -->
+      <div class="relative">
+        <input 
+          type="text" 
+          placeholder="Cari properti..." 
+          class="pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+        <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+          <i class="fas fa-search"></i>
+        </span>
+      </div>
     </div>
+  </div>
 </nav>
+
+<!-- Spacer supaya konten tidak ketiban navbar fixed -->
+<div class="h-[72px]"></div>

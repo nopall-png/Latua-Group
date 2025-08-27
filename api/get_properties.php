@@ -16,6 +16,14 @@ try {
         ORDER BY p.created_at DESC
     ");
     $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // tambahkan image_url agar langsung bisa dipakai di React
+    foreach ($properties as &$prop) {
+        $prop['image_url'] = !empty($prop['main_image_path'])
+            ? "/LatuaGroup/uploads/properties/" . $prop['main_image_path']
+            : "/LatuaGroup/uploads/default.jpg";
+    }
+
     echo json_encode($properties);
 } catch (PDOException $e) {
     echo json_encode(["error" => $e->getMessage()]);

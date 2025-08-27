@@ -1,13 +1,17 @@
-const PropertyCard = ({ id, title, price, province, regency, property_type, main_image_path, description }) => {
-  const imageUrl = main_image_path 
-    ? `/LatuaGroup/Uploads/properties/${main_image_path}` 
-    : "/LatuaGroup/Uploads/default.jpg";
+const PropertyCard = ({ id, title, price, province, regency, property_type, image_url, description }) => {
+  // fallback kalau image_url kosong
+  const imageUrl = image_url || "/LatuaGroup/uploads/default.jpg";
 
   return (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col">
       {/* Image */}
       <a href={`/LatuaGroup/pages/detail_property.php?id=${id}`} className="block">
-        <img src={imageUrl} alt={title} className="w-full h-48 object-cover rounded-t-2xl" />
+        <img
+          src={imageUrl}
+          alt={title}
+          className="w-full h-48 object-cover rounded-t-2xl"
+          onError={(e) => e.target.src = "/LatuaGroup/uploads/default.jpg"} // fallback kalau gambar rusak
+        />
       </a>
 
       {/* Content */}
@@ -37,3 +41,5 @@ const PropertyCard = ({ id, title, price, province, regency, property_type, main
     </div>
   );
 };
+
+export default PropertyCard;

@@ -2,6 +2,7 @@
 // Prevent caching
 header("Cache-Control: no-cache, must-revalidate");
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+
 require_once $_SERVER['DOCUMENT_ROOT'] . '/LatuaGroup/includes/header.php';
 ?>
 <!DOCTYPE html>
@@ -24,16 +25,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/LatuaGroup/includes/header.php';
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
-    /* Hapus scrollbar horizontal */
-    .scrollbar-hide::-webkit-scrollbar {
-      display: none;
-    }
-    .scrollbar-hide {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    /* Hilangkan scrollbar horizontal */
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Line clamp = potong teks jadi max 2 baris */
+    /* Potong teks max 2 baris */
     .line-clamp-2 {
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -49,7 +45,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/LatuaGroup/includes/header.php';
 
   <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/LatuaGroup/includes/footer.php'; ?>
 
-  <!-- React Components (pastikan file2 ada di folder react/) -->
+  <!-- React Components -->
   <script type="text/babel" src="/LatuaGroup/react/HeroSearch.js"></script>
   <script type="text/babel" src="/LatuaGroup/react/PropertyCard.js"></script>
   <script type="text/babel" src="/LatuaGroup/react/PropertyList.js"></script>

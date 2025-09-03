@@ -1,45 +1,106 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/LatuaGroup/includes/db_connect.php';
 
+// Handle form submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = $_POST['title'];
-    $price = $_POST['price'];
-    $province = $_POST['province'];
-    $regency = $_POST['regency'];
-    $description = $_POST['description'];
+    $title        = $_POST['title'] ?? '';
+    $price        = $_POST['price'] ?? 0;
+    $province     = $_POST['province'] ?? '';
+    $regency      = $_POST['regency'] ?? '';
+    $description  = $_POST['description'] ?? '';
+    $propertyType = $_POST['property_type'] ?? 'for_sale';
 
-    // Upload gambar
-    $fileName = null;
-    if (!empty($_FILES['image']['name'])) {
-        $fileName = time() . "_" . basename($_FILES['image']['name']);
-        move_uploaded_file($_FILES['image']['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . "/LatuaGroup/Uploads/properties/" . $fileName);
+    try {
+        // === 1. Simpan properti ke tabel properties ===
+        $stmt = $pdo->prepare("
+            INSERT INTO properties (title, description, price, province, regency, property_type, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        ");
+        $stmt->execute([$title, $description, $price, $province, $regency, $propertyType]);
+        $propertyId = $pdo->lastInsertId();
+
+        // === 2. Upload gambar ===
+        if (!empty($_FILES['images']['name'][0])) {
+            $uploadDir = $_SERVER['DOCUMENT_ROOT'] . "/LatuaGroup/uploads/properties/";
+
+            // Pastikan folder ada
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
+                if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
+                    $ext = strtolower(pathinfo($_FILES['images']['name'][$key], PATHINFO_EXTENSION));
+
+                    // Hanya izinkan jpg, jpeg, png, webp
+                    if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+                        $newFileName = uniqid("prop_") . "." . $ext;
+                        $targetPath = $uploadDir . $newFileName;
+
+                        if (move_uploaded_file($tmpName, $targetPath)) {
+                            // Simpan nama file ke tabel property_images
+                            $stmtImg = $pdo->prepare("INSERT INTO property_images (property_id, image_path) VALUES (?, ?)");
+                            $stmtImg->execute([$propertyId, $newFileName]);
+                        }
+                    }
+                }
+            }
+        }
+
+        header("Location: properties.php?success=1");
+        exit();
+    } catch (PDOException $e) {
+        die("Error: " . $e->getMessage());
     }
-
-    $stmt = $pdo->prepare("INSERT INTO properties (title, price, province, regency, description, image) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$title, $price, $province, $regency, $description, $fileName]);
-
-    header("Location: properties.php");
-    exit;
 }
 ?>
+
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <title>Tambah Properti</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100">
-  <div class="max-w-2xl mx-auto py-10">
-    <h1 class="text-2xl font-bold mb-6">Tambah Properti</h1>
-    <form method="POST" enctype="multipart/form-data" class="space-y-4 bg-white p-6 rounded shadow">
-      <input type="text" name="title" placeholder="Judul Properti" class="w-full border rounded p-2" required>
-      <input type="number" name="price" placeholder="Harga" class="w-full border rounded p-2" required>
-      <input type="text" name="province" placeholder="Provinsi" class="w-full border rounded p-2" required>
-      <input type="text" name="regency" placeholder="Kabupaten/Kota" class="w-full border rounded p-2" required>
-      <textarea name="description" placeholder="Deskripsi" class="w-full border rounded p-2" rows="4"></textarea>
-      <input type="file" name="image" class="w-full">
-      <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">Simpan</button>
+<body class="bg-gray-100 font-sans">
+  <div class="max-w-2xl mx-auto py-10 px-5">
+    <h1 class="text-2xl font-semibold mb-6">Tambah Properti Baru</h1>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-4 bg-white p-6 rounded-lg shadow">
+      <div>
+        <label class="block mb-1">Judul Properti</label>
+        <input type="text" name="title" class="w-full border px-3 py-2 rounded" required>
+      </div>
+      <div>
+        <label class="block mb-1">Deskripsi</label>
+        <textarea name="description" class="w-full border px-3 py-2 rounded" rows="4" required></textarea>
+      </div>
+      <div>
+        <label class="block mb-1">Harga</label>
+        <input type="number" name="price" class="w-full border px-3 py-2 rounded" required>
+      </div>
+      <div>
+        <label class="block mb-1">Provinsi</label>
+        <input type="text" name="province" class="w-full border px-3 py-2 rounded">
+      </div>
+      <div>
+        <label class="block mb-1">Kabupaten/Kota</label>
+        <input type="text" name="regency" class="w-full border px-3 py-2 rounded">
+      </div>
+      <div>
+        <label class="block mb-1">Tipe Properti</label>
+        <select name="property_type" class="w-full border px-3 py-2 rounded">
+          <option value="for_sale">Dijual</option>
+          <option value="for_rent">Disewa</option>
+        </select>
+      </div>
+      <div>
+        <label class="block mb-1">Foto Properti (bisa lebih dari 1)</label>
+        <input type="file" name="images[]" accept="image/*" multiple class="w-full">
+      </div>
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        Simpan
+      </button>
     </form>
   </div>
 </body>

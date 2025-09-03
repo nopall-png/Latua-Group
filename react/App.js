@@ -1,13 +1,13 @@
 const App = () => {
   return (
-    <div className="w-full">
-      {/* Hero Search Section */}
+    <div>
+      {/* Hero Search */}
       <HeroSearch />
 
       {/* Property List */}
       <PropertyList />
 
-      {/* Bank Partner Section */}
+      {/* Bank Partner */}
       <BankPartnerSection />
 
       {/* Project Section */}
@@ -15,6 +15,7 @@ const App = () => {
 
       {/* Why Choose Us */}
       <WhyChooseUsSection />
+      
     </div>
   );
 };

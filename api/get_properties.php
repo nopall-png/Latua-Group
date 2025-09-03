@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 
 try {
     $stmt = $pdo->query("
-        SELECT p.id, p.title, p.price, p.province, p.regency, p.property_type,
+        SELECT p.id, p.title, p.description, p.price, p.province, p.regency, p.property_type,
                pi.image_path AS main_image_path
         FROM properties p
         LEFT JOIN (
@@ -17,12 +17,14 @@ try {
     ");
     $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // tambahkan image_url agar langsung bisa dipakai di React
     foreach ($properties as &$prop) {
-        $prop['image_url'] = !empty($prop['main_image_path'])
-            ? "/LatuaGroup/uploads/properties/" . $prop['main_image_path']
-            : "/LatuaGroup/uploads/default.jpg";
+        if (!empty($prop['main_image_path'])) {
+            $prop['image_url'] = "/LatuaGroup/uploads/properties/" . $prop['main_image_path'];
+        } else {
+            $prop['image_url'] = "/LatuaGroup/uploads/default.jpg";
+        }
     }
+
 
     echo json_encode($properties);
 } catch (PDOException $e) {
